@@ -1,8 +1,11 @@
 package Behaviors;
 
-public interface Behavior
+public class Behavior
 {
 
-    
+    public Behavior()
+    {
+        
+    }
 
 }
