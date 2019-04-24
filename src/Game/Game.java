@@ -1,0 +1,60 @@
+package Game;
+
+import java.util.ArrayList;
+
+public class Game
+{
+
+    private Player player1;
+    private Player player2;
+    private PayoffMatrix payoffMatrix;
+
+    /**
+     * Creates a two player game with a payoff matrix and no players
+     * @param pMatrix The payoff matrix for the game
+     */
+    public Game(PayoffMatrix pMatrix)
+    {
+        payoffMatrix = pMatrix;
+        player1 = null;
+        player2 = null;
+    }
+
+    /**
+     * Creates a two player game with a payoff matrix and two players
+     * @param pMatrix The payoff matrix for the game
+     * @param player1 The first player
+     * @param player2 The second player
+     */
+    public Game(PayoffMatrix pMatrix, Player player1, Player player2)
+    {
+        payoffMatrix = pMatrix;
+        this.player1 = player1;
+        this.player2 = player2;
+    }
+
+    /**
+     * Sets new players for the game
+     * @param player1 The new first player
+     * @param player2 The new second player
+     */
+    public void setPlayers(Player player1, Player player2)
+    {
+        this.player1 = player1;
+        this.player2 = player2;
+    }
+
+    public int[] getActionPair(int round)
+    {
+        int[] pair = new int[2];
+        pair[0] = player1.getAction(round);
+        pair[1] = player2.getAction(round);
+        return pair;
+    }
+
+    public PayoffMatrix getPayoffMatrix()
+    {
+        return payoffMatrix;
+    }
+
+}

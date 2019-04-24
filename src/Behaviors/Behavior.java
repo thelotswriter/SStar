@@ -5,7 +5,7 @@ public class Behavior
 
     public Behavior()
     {
-        
+
     }
 
 }
