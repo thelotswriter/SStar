@@ -44,6 +44,11 @@ public class Game
         this.player2 = player2;
     }
 
+    /**
+     * Gives the pair of actions [player 1's action, player 2's action] at some time
+     * @param round The round being queried
+     * @return The pair of actions taken by the players at the specified time
+     */
     public int[] getActionPair(int round)
     {
         int[] pair = new int[2];
@@ -52,9 +57,31 @@ public class Game
         return pair;
     }
 
+    /**
+     * Gives the payoff matrix for the game
+     * @return The game's payoff matrix
+     */
     public PayoffMatrix getPayoffMatrix()
     {
         return payoffMatrix;
+    }
+
+    /**
+     * Gives the first player
+     * @return The first player
+     */
+    public Player getPlayer1()
+    {
+        return player1;
+    }
+
+    /**
+     * Gives the second player
+     * @return The second player
+     */
+    public Player getPlayer2()
+    {
+        return player2;
     }
 
 }

@@ -1,4 +1,8 @@
 package Automata;
 
-public class State {
+public class State
+{
+
+
+
 }
