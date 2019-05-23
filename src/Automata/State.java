@@ -7,14 +7,18 @@ public class State
 {
 
     private ArrayList<Transition>[] transitions;
+    private int action;
+    private boolean normalize;
 
     /**
      * A state with a number of actions which may cause a transition
      * @param numActions The number of actions possible to be made in the state
      */
-    public State(int numActions)
+    public State(int repdAction, int numActions, boolean autoNormalize)
     {
+        action = repdAction;
         transitions = new ArrayList[numActions];
+        normalize = autoNormalize;
     }
 
     /**
@@ -25,9 +29,17 @@ public class State
     public void addTransition(int action, Transition newTransition)
     {
         transitions[action].add(newTransition);
-        normalizeTransitions(action);
+        if(normalize)
+        {
+            normalizeTransitions(action);
+        }
     }
 
+    /**
+     * Gives the transition dependent on the indexed action
+     * @param action The action taken that leads to a transition
+     * @return The state reached based on the action taken
+     */
     public State transition(int action)
     {
         Random rand = new Random();
@@ -44,15 +56,28 @@ public class State
         return transitions[action].get(transitions[action].size() - 1).getNextState();
     }
 
+    public int getAction()
+    {
+        return action;
+    }
+
     public ArrayList<Transition> getTransitions(int action)
     {
         return transitions[action];
     }
 
+    /**
+     * Sets the weighted transitions based on the action taken, normalized if enabled
+     * @param action The action which determines this set of transitions
+     * @param transitions Possible weighted transitions with their respective weights based on the action specified
+     */
     public void setTransitions(int action, ArrayList<Transition> transitions)
     {
         this.transitions[action] = transitions;
-        normalizeTransitions(action);
+        if(normalize)
+        {
+            normalizeTransitions(action);
+        }
     }
 
     /**
@@ -60,6 +85,10 @@ public class State
      */
     public void makeDeterministic()
     {
+        if(!normalize)
+        {
+            normalize();
+        }
         for(ArrayList<Transition> transitionArray : transitions)
         {
             int bestIndex = 0;
@@ -82,6 +111,14 @@ public class State
                     transitionArray.get(i).setProbability(0);
                 }
             }
+        }
+    }
+
+    public void normalize()
+    {
+        for(int act = 0; act < transitions.length; act++)
+        {
+            normalizeTransitions(act);
         }
     }
 
