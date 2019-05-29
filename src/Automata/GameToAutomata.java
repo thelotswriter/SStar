@@ -52,13 +52,156 @@ public class GameToAutomata {
             colFirstOptions.add(s);
         }
         colStartState.normalize();
+        rowAutomatonTreeLayers.add(rowFirstOptions);
+        colAutomatonTreeLayers.add(colFirstOptions);
         for(int layer = 0; layer < history + 1; layer++)
         {
-            int rowLayerStates = numPlayer1Actions * ((int) Math.pow(numPlayer1Actions * numPlayer2Actions, layer + 1));
-            int colLayerStates = numPlayer2Actions * ((int) Math.pow(numPlayer1Actions * numPlayer2Actions, layer + 1));
+//            int rowLayerStates = numPlayer1Actions * ((int) Math.pow(numPlayer1Actions * numPlayer2Actions, layer + 1));
+//            int colLayerStates = numPlayer2Actions * ((int) Math.pow(numPlayer1Actions * numPlayer2Actions, layer + 1));
+
         }
         // Learn the game
         return null;
+    }
+
+    private class AutomataTree
+    {
+
+        private Node root;
+        private int act1;
+        private int act2;
+        private int actionDepth;
+
+        private AutomataTree(int history, int actions1, int actions2)
+        {
+            root = new Node();
+            act1 = actions1;
+            act2 = actions2;
+            actionDepth = 0;
+            root.addState(new State(0, 0, false));
+            generateTree(history, actions1, actions2);
+        }
+
+        private void generateTree(int history, int actions1, int actions2)
+        {
+            Node[] layer = new Node[actions1];
+            root.addNodes(actions1);
+            for(int i = 0; i < actions1; i++)
+            {
+                layer[i] = root.getNode(i);
+                layer[i].addState(new State(i, actions2, false));
+            }
+            actionDepth++;
+            for(int i = 0; i < history; i++)
+            {
+                layer = generateNextLayer(layer, actions1 * actions2);
+                for(int j = 0; j < layer.length; j++)
+                {
+                    layer[j].addState(new State(j % actions1, actions2, false));
+                }
+                actionDepth += 2;
+            }
+            connect(root);
+            connectLeaves();
+        }
+
+        private Node[] generateNextLayer(Node[] currentLayer, int numChildren)
+        {
+            Node[] newLayer = new Node[currentLayer.length * numChildren];
+            for(int i = 0; i < currentLayer.length; i++)
+            {
+                currentLayer[i].addNodes(numChildren);
+                for(int j = 0; j < numChildren; j++)
+                {
+                    int ind = i * numChildren + j;
+                    newLayer[ind] = currentLayer[i].getNode(j);
+                }
+            }
+            return newLayer;
+        }
+
+        private void connect(Node node)
+        {
+            int nChildren = node.getNumChildren();
+            for(int i = 0; i < nChildren; i++)
+            {
+                Node child = node.getNode(i);
+                connect(child);
+                Transition t = new Transition(child.getState(), 1);
+                node.getState().addTransition(i / act2, t);
+            }
+            if(nChildren > 0)
+            {
+                node.getState().normalize();
+            }
+        }
+
+        private void connectLeaves()
+        {
+
+        }
+
+        private State getState(int[] position)
+        {
+            if(position.length % 2 != 1)
+            {
+                return null;
+            }
+            Node reachedNode = root.getNode(position[0]);
+            for(int i = 1; i + 1 < position.length; i += 2)
+            {
+                reachedNode = reachedNode.getNode(position[i] * act2 + position[i + 1]);
+            }
+            return reachedNode.getState();
+        }
+
+        private class Node
+        {
+            private State state;
+            private Node[] children;
+
+            private Node()
+            {
+                children = null;
+            }
+
+            private void addState(State newState)
+            {
+                state = newState;
+            }
+
+            private void addNodes(int number)
+            {
+                children = new Node[number];
+                for(int i = 0; i < number; i++)
+                {
+                    children[i] = new Node();
+                }
+            }
+
+            private State getState()
+            {
+                return state;
+            }
+
+            private Node getNode(int index)
+            {
+                return children[index];
+            }
+
+            private int getNumChildren()
+            {
+                if(children == null)
+                {
+                    return 0;
+                } else
+                {
+                    return children.length;
+                }
+            }
+
+        }
+
     }
 
 }
