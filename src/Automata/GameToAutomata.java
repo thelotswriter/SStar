@@ -138,7 +138,47 @@ public class GameToAutomata {
 
         private void connectLeaves()
         {
+            int[] currentNodeIndex = new int[actionDepth];
+            int[] maxVals = new int[actionDepth];
+            for(int i = 0; i < actionDepth; i++)
+            {
+                if(i % 2 == 0)
+                {
+                    maxVals[i] = act1;
+                } else
+                {
+                    maxVals[i] = act2;
+                }
+            }
+            boolean covered = false;
+            while(!covered)
+            {
+                State currentState = getState(currentNodeIndex);
+                // Connect leaves
+                int[] lookupKey = new int[actionDepth];
+                for(int i = 2; i < actionDepth; i++)
+                {
+                    lookupKey[i - 2] = currentNodeIndex[i];
+                }
+                for(int i = 0; i < act2; i++)
+                {
+                    for(int j = 0; j < act1; j++)
+                    {
 
+                    }
+                }
+                // Advance currentNodeIndex
+                for(int i = actionDepth - 1; i >=0; i--)
+                {
+                    currentNodeIndex[i]++;
+                    covered = false;
+                    if(currentNodeIndex[i] >= maxVals[i])
+                    {
+                        currentNodeIndex[i] = 0;
+                        covered = true;
+                    }
+                }
+            }
         }
 
         private State getState(int[] position)
