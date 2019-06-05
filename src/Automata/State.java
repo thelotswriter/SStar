@@ -17,7 +17,18 @@ public class State
     public State(int repdAction, int numActions, boolean autoNormalize)
     {
         action = repdAction;
-        transitions = new ArrayList[numActions];
+        if(numActions <= 0)
+        {
+            transitions = new ArrayList[1];
+            transitions[0] = new ArrayList<>();
+        } else
+        {
+            transitions = new ArrayList[numActions];
+            for(int i = 0; i < numActions; i++)
+            {
+                transitions[i] = new ArrayList<>();
+            }
+        }
         normalize = autoNormalize;
     }
 

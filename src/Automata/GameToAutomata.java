@@ -22,44 +22,44 @@ public class GameToAutomata {
      */
     public LearningAutomaton generateAutomaton(Game game, int history)
     {
-        double[][][] matrix = game.getPayoffMatrix().getMatrix();
-        int numPlayer1Actions = matrix.length;
-        int numPlayer2Actions = matrix[0].length;
-//        int numAutomata = 1;
-//        for(int i = 0; i <= history; i++)
-//        {
-//            numAutomata += Math.pow(numPlayer1Actions * numPlayer2Actions, history + 1);
-//        }
-        State rowStartState = new State(0, numPlayer1Actions, false);
-        State colStartState = new State(0, numPlayer2Actions, false);
-        ArrayList<ArrayList> rowAutomatonTreeLayers = new ArrayList<>();
-        ArrayList<ArrayList> colAutomatonTreeLayers = new ArrayList<>();
-        ArrayList<State> rowFirstOptions = new ArrayList<>();
-        ArrayList<State> colFirstOptions = new ArrayList<>();
-        for(int i = 0; i < numPlayer1Actions; i++)
-        {
-            State s = new State(i, numPlayer1Actions * numPlayer2Actions, false);
-            Transition t = new Transition(s, 1);
-            rowStartState.addTransition(i, t);
-            rowFirstOptions.add(s);
-        }
-        rowStartState.normalize();
-        for(int i = 0; i < numPlayer2Actions; i++)
-        {
-            State s = new State(i, numPlayer1Actions * numPlayer2Actions, false);
-            Transition t = new Transition(s, 1);
-            colStartState.addTransition(i, t);
-            colFirstOptions.add(s);
-        }
-        colStartState.normalize();
-        rowAutomatonTreeLayers.add(rowFirstOptions);
-        colAutomatonTreeLayers.add(colFirstOptions);
-        for(int layer = 0; layer < history + 1; layer++)
-        {
-//            int rowLayerStates = numPlayer1Actions * ((int) Math.pow(numPlayer1Actions * numPlayer2Actions, layer + 1));
-//            int colLayerStates = numPlayer2Actions * ((int) Math.pow(numPlayer1Actions * numPlayer2Actions, layer + 1));
+//        double[][][] matrix = game.getPayoffMatrix().getMatrix();
+//        int numPlayer1Actions = matrix.length;
+//        int numPlayer2Actions = matrix[0].length;
+        AutomataTree rowTree = new AutomataTree(history, 3, 2);
+        int x = 1;
+        x++;
 
-        }
+//        State rowStartState = new State(0, numPlayer1Actions, false);
+//        State colStartState = new State(0, numPlayer2Actions, false);
+
+//        ArrayList<ArrayList> rowAutomatonTreeLayers = new ArrayList<>();
+//        ArrayList<ArrayList> colAutomatonTreeLayers = new ArrayList<>();
+//        ArrayList<State> rowFirstOptions = new ArrayList<>();
+//        ArrayList<State> colFirstOptions = new ArrayList<>();
+//        for(int i = 0; i < numPlayer1Actions; i++)
+//        {
+//            State s = new State(i, numPlayer1Actions * numPlayer2Actions, false);
+//            Transition t = new Transition(s, 1);
+//            rowStartState.addTransition(i, t);
+//            rowFirstOptions.add(s);
+//        }
+//        rowStartState.normalize();
+//        for(int i = 0; i < numPlayer2Actions; i++)
+//        {
+//            State s = new State(i, numPlayer1Actions * numPlayer2Actions, false);
+//            Transition t = new Transition(s, 1);
+//            colStartState.addTransition(i, t);
+//            colFirstOptions.add(s);
+//        }
+//        colStartState.normalize();
+//        rowAutomatonTreeLayers.add(rowFirstOptions);
+//        colAutomatonTreeLayers.add(colFirstOptions);
+//        for(int layer = 0; layer < history + 1; layer++)
+//        {
+////            int rowLayerStates = numPlayer1Actions * ((int) Math.pow(numPlayer1Actions * numPlayer2Actions, layer + 1));
+////            int colLayerStates = numPlayer2Actions * ((int) Math.pow(numPlayer1Actions * numPlayer2Actions, layer + 1));
+//
+//        }
         // Learn the game
         return null;
     }
@@ -162,9 +162,12 @@ public class GameToAutomata {
                 }
                 for(int i = 0; i < act2; i++)
                 {
+                    lookupKey[actionDepth - 2] = i;
                     for(int j = 0; j < act1; j++)
                     {
-
+                        lookupKey[actionDepth - 1] = j;
+                        Transition t = new Transition(getState(lookupKey), 1);
+                        currentState.addTransition(i, t);
                     }
                 }
                 // Advance currentNodeIndex

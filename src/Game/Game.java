@@ -84,4 +84,19 @@ public class Game
         return player2;
     }
 
+    public int getNumRowActions()
+    {
+        return payoffMatrix.getMatrix().length;
+    }
+
+    public int getNumColActions()
+    {
+        return payoffMatrix.getMatrix()[0].length;
+    }
+
+    public int getNumRounds()
+    {
+        return Math.min(player1.getActionHistoryLength(), player2.getActionHistoryLength());
+    }
+
 }
