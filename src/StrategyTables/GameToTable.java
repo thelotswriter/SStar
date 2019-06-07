@@ -29,8 +29,8 @@ public class GameToTable {
                 int[] previousState = new int[actionHistory.size() * 2];
                 for(int j = 0; j < actionHistory.size(); j++)
                 {
-                    previousState[2 * j] = actionHistory.get(i)[0];
-                    previousState[2 * j + 1] = actionHistory.get(i)[1];
+                    previousState[2 * j] = actionHistory.get(j)[0];
+                    previousState[2 * j + 1] = actionHistory.get(j)[1];
                 }
                 table.addObservation(currentActionPair[0], previousState);
             } else
@@ -41,6 +41,7 @@ public class GameToTable {
                     previousState[2 * j] = actionHistory.get(actionHistory.size() - history + j)[0];
                     previousState[2 * j + 1] = actionHistory.get(actionHistory.size() - history + j)[1];
                 }
+                table.addObservation(currentActionPair[0], previousState);
             }
             actionHistory.add(currentActionPair);
         }

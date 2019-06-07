@@ -1,5 +1,7 @@
 package StrategyTables;
 
+import java.util.Collection;
+
 public class StrategyTable
 {
 
@@ -23,7 +25,8 @@ public class StrategyTable
 
     public void addObservation(int playerAction, int[] previousState)
     {
-        table[arrayToInt(previousState)][playerAction]++;
+        int r = arrayToInt(previousState);
+        table[r][playerAction]++;
     }
 
     public int getCount(int[] state, int action)
@@ -54,6 +57,46 @@ public class StrategyTable
         }
     }
 
+    public void print()
+    {
+        for(int i = 0; i < table.length; i++)
+        {
+            for(int j = 0; j < table[i].length; j++)
+            {
+                System.out.print('\t');
+                System.out.print(table[i][j]);
+            }
+            System.out.println();
+        }
+    }
+
+    public static StrategyTable merge(Collection<StrategyTable> tables)
+    {
+        int nRows = 0;
+        int nCols = 0;
+        StrategyTable sT = null;
+        for(StrategyTable table : tables)
+        {
+            if(sT == null)
+            {
+                sT = new StrategyTable(table.nActions, table.nOtherActions, table.history);
+                nRows = table.table.length;
+                nCols = table.table[0].length;
+            }
+            if(sT.nActions == table.nActions && sT.nOtherActions == table.nOtherActions && sT.history == table.history)
+            {
+                for(int i = 0; i < sT.table.length; i++)
+                {
+                    for(int j = 0; j < sT.table[i].length; j++)
+                    {
+                        sT.table[i][j] += table.table[i][j];
+                    }
+                }
+            }
+        }
+        return sT;
+    }
+
     private int arrayToInt(int[] row)
     {
         int len = 0;
@@ -72,14 +115,19 @@ public class StrategyTable
             rowNum += (int) Math.pow(nActions * nOtherActions, histIter);
             histIter--;
         }
-        if(histIter > 0)
+        for(int i = 0; i < histIter; i++)
         {
-            for(; histIter >= 0; histIter--)
-            {
-                rowNum += (int) (Math.pow(nActions, histIter) * Math.pow(nOtherActions, histIter + 1)) * row[2 * histIter + 1];
-                rowNum += (int) (Math.pow(nActions, histIter) * Math.pow(nOtherActions, histIter)) * row[2 * histIter];
-            }
+            rowNum += row[2* (histIter - i) - 1] * ((int) Math.pow(nActions, i))* ((int) Math.pow(nOtherActions, i));
+            rowNum += row[2 * (histIter - i) - 2] * ((int) Math.pow(nActions, i))* ((int) Math.pow(nOtherActions, i + 1));
         }
+//        if(histIter > 0)
+//        {
+//            for(; histIter > 0; histIter--)
+//            {
+//                rowNum += (int) (Math.pow(nActions, histIter) * Math.pow(nOtherActions, histIter + 1)) * row[2 * histIter - 1];
+//                rowNum += (int) (Math.pow(nActions, histIter) * Math.pow(nOtherActions, histIter)) * row[2 * histIter - 2];
+//            }
+//        }
         return rowNum;
     }
 
