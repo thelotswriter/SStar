@@ -1,3 +1,5 @@
+import Attitudes.Frustrated;
+import Attitudes.Greedy;
 import Automata.GameToAutomata;
 import Game.CSVtoGame;
 import Game.Game;
@@ -40,11 +42,17 @@ public class Main
             }
             StrategyTable combinedTable = StrategyTable.merge(tables);
             combinedTable.print();
-            for(int i = 0; i < tables.size(); i++)
-            {
-                System.out.println("--------------");
-                tables.get(i).print();
-            }
+//            for(int i = 0; i < tables.size(); i++)
+//            {
+//                System.out.println("--------------");
+//                tables.get(i).print();
+//            }
+            StrategyTable greedyStrategy = Greedy.getInstance().generateSpecificStrategy(games.get(0));
+            System.out.println("=======================================");
+            greedyStrategy.print();
+            StrategyTable frustratedStrategy = Frustrated.getInstance().generateSpecificStrategy(games.get(0));
+            System.out.println("=======================================");
+            frustratedStrategy.print();
             System.out.println("Success!");
         }
     }

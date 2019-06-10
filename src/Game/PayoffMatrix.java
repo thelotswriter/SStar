@@ -75,6 +75,24 @@ public class PayoffMatrix
     }
 
     /**
+     * Gives the number of rows in the payoff matrix
+     * @return The number of rows in the payoff matrix
+     */
+    public int getNumRows()
+    {
+        return matrix.length;
+    }
+
+    /**
+     * Gives the number of columnss in the payoff matrix
+     * @return The number of columnss in the payoff matrix
+     */
+    public int getNumCols()
+    {
+        return matrix[0].length;
+    }
+
+    /**
      * Gives the value pair for the associated row and column
      * @param row The row the value is to be retrieved from
      * @param col The column the value is to be retrieved from
@@ -154,6 +172,23 @@ public class PayoffMatrix
             }
             System.out.println();
         }
+    }
+
+    /**
+     * Transposes the matrix so the rows become the columns and the columns become rows. Swaps values as well to compensate
+     */
+    public void transpose()
+    {
+        double[][][] newMatrix = new double[matrix[0].length][matrix.length][2];
+        for(int newRow = 0; newRow < newMatrix.length; newRow++)
+        {
+            for(int newCol = 0; newCol < newMatrix[newRow].length; newCol++)
+            {
+                newMatrix[newRow][newCol][0] = matrix[newCol][newRow][1];
+                newMatrix[newRow][newCol][1] = matrix[newCol][newRow][0];
+            }
+        }
+        matrix = newMatrix;
     }
 
 }

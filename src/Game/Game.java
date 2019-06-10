@@ -86,17 +86,28 @@ public class Game
 
     public int getNumRowActions()
     {
-        return payoffMatrix.getMatrix().length;
+        return payoffMatrix.getNumRows();
     }
 
     public int getNumColActions()
     {
-        return payoffMatrix.getMatrix()[0].length;
+        return payoffMatrix.getNumCols();
     }
 
     public int getNumRounds()
     {
         return Math.min(player1.getActionHistoryLength(), player2.getActionHistoryLength());
+    }
+
+    /**
+     * Swaps columns and rows
+     */
+    public void transpose()
+    {
+        payoffMatrix.transpose();
+        Player temp = player1;
+        player1 = player2;
+        player2 = temp;
     }
 
 }
