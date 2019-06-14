@@ -57,6 +57,54 @@ public class StrategyTable
         }
     }
 
+    public StrategyTable generateResizedTable(int newHistory)
+    {
+        if(newHistory == history)
+        {
+            return this;
+        } else if(newHistory > history)
+        {
+            return generateExpandedTable(newHistory);
+        } else
+        {
+            if(newHistory < 0)
+            {
+                return generateResizedTable(0);
+            } else
+            {
+                return generateCollapsedTable(newHistory);
+            }
+        }
+    }
+
+    private StrategyTable generateCollapsedTable(int newHistory)
+    {
+        StrategyTable newTable = new StrategyTable(nActions, nOtherActions, newHistory);
+
+        return newTable;
+    }
+
+    private StrategyTable generateExpandedTable(int newHistory)
+    {
+        StrategyTable newTable = new StrategyTable(nActions, nOtherActions, newHistory);
+        for(int r = 0; r < table.length; r++)
+        {
+            for(int c = 0; c < table[r].length; c++)
+            {
+                newTable.table[newTable.table.length - r][c] = table[r][c];
+            }
+        }
+        for(int h = newHistory; h > history; h--)
+        {
+            int[] newEntryIndex = new int[2 * h];
+            int[] correspondingIndex = new int[2 * history];
+
+        }
+        return newTable;
+    }
+
+
+
     public void print()
     {
         for(int i = 0; i < table.length; i++)

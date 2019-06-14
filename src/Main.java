@@ -1,5 +1,4 @@
-import Attitudes.Frustrated;
-import Attitudes.Greedy;
+import Attitudes.*;
 import Automata.GameToAutomata;
 import Game.CSVtoGame;
 import Game.Game;
@@ -48,11 +47,23 @@ public class Main
 //                tables.get(i).print();
 //            }
             StrategyTable greedyStrategy = Greedy.getInstance().generateSpecificStrategy(games.get(0));
-            System.out.println("=======================================");
+            System.out.println("==================GREEDY=====================");
             greedyStrategy.print();
             StrategyTable frustratedStrategy = Frustrated.getInstance().generateSpecificStrategy(games.get(0));
-            System.out.println("=======================================");
+            System.out.println("==================FRUSTRATED=====================");
             frustratedStrategy.print();
+            StrategyTable protectiveStrategy = Protective.getInstance().generateSpecificStrategy(games.get(0));
+            System.out.println("==================PROTECTIVE=====================");
+            protectiveStrategy.print();
+            StrategyTable meanStrategy = Mean.getInstance().generateSpecificStrategy(games.get(0));
+            System.out.println("==================MEAN=====================");
+            meanStrategy.print();
+            StrategyTable placateStrategy = Placate.getInstance().generateSpecificStrategy(games.get(0));
+            System.out.println("==================PLACATE=====================");
+            placateStrategy.print();
+            StrategyTable compromiseStrategy = Compromise.getInstance().generateSpecificStrategy(games.get(0));
+            System.out.println("==================COMPROMISE=====================");
+            compromiseStrategy.print();
             System.out.println("Success!");
         }
     }

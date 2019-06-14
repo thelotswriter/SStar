@@ -5,44 +5,44 @@ import StrategyTables.StrategyTable;
 
 import java.util.ArrayList;
 
-public class Mean implements Attitude
+public class Compromise implements Attitude
 {
 
-    private static Mean singleton;
+    private static Compromise singleton;
 
-    public static Mean getInstance()
+    public static Compromise getInstance()
     {
         if(singleton == null)
         {
-            singleton = new Mean();
+            singleton = new Compromise();
         }
         return singleton;
     }
 
-    private Mean()
+    private Compromise()
     {
 
     }
-    
+
     @Override
     public StrategyTable generateSpecificStrategy(Game game)
     {
-        double worstValue = Double.MAX_VALUE;
-        ArrayList<Integer> worstRows = new ArrayList<>();
+        double bestValue = Double.MIN_VALUE;
+        ArrayList<Integer> bestRows = new ArrayList<>();
         for(int r = 0; r < game.getNumRowActions(); r++)
         {
             for(int c = 0; c < game.getNumColActions(); c++)
             {
-                double val = game.getPayoffMatrix().getColPlayerValue(r, c);
-                if(val < worstValue)
+                double val = game.getPayoffMatrix().getRowPlayerValue(r, c) + game.getPayoffMatrix().getColPlayerValue(r, c);
+                if(val > bestValue)
                 {
-                    worstValue = val;
-                    worstRows.clear();
-                    worstRows.add(r);
-                } else if(val == worstValue)
+                    bestValue = val;
+                    bestRows.clear();
+                    bestRows.add(r);
+                } else if(val == bestValue)
                 {
                     boolean add = true;
-                    for(Integer row : worstRows)
+                    for(Integer row : bestRows)
                     {
                         if(row.intValue() == r)
                         {
@@ -52,15 +52,15 @@ public class Mean implements Attitude
                     }
                     if(add)
                     {
-                        worstRows.add(r);
+                        bestRows.add(r);
                     }
                 }
             }
         }
         StrategyTable strategy = new StrategyTable(game.getNumRowActions(), game.getNumColActions(), 0);
-        if(worstRows.size() > 0)
+        if(bestRows.size() > 0)
         {
-            for(int row : worstRows)
+            for(int row : bestRows)
             {
                 strategy.addObservation(row, null);
             }

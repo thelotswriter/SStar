@@ -25,7 +25,17 @@ public class Friendly implements Attitude
     }
     
     @Override
-    public StrategyTable generateSpecificStrategy(Game game) {
+    public StrategyTable generateSpecificStrategy(Game game)
+    {
+        double[][] combinedMatrix = new double[game.getNumRowActions()][game.getNumColActions()];
+        for(int r = 0; r < game.getNumRowActions(); r++)
+        {
+            for(int c = 0; c < game.getNumColActions(); c++)
+            {
+                combinedMatrix[r][c] = game.getPayoffMatrix().getColPlayerValue(r, c) + game.getPayoffMatrix().getRowPlayerValue(r, c);
+            }
+        }
         return null;
     }
+
 }
