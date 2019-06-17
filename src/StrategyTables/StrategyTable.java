@@ -91,14 +91,26 @@ public class StrategyTable
         {
             for(int c = 0; c < table[r].length; c++)
             {
-                newTable.table[newTable.table.length - r][c] = table[r][c];
+                newTable.table[newTable.table.length - r - 1][c] = table[r][c];
             }
         }
         for(int h = newHistory; h > history; h--)
         {
-            int[] newEntryIndex = new int[2 * h];
-            int[] correspondingIndex = new int[2 * history];
-
+            int[] index = new int[2 * h];
+            while(index != null)
+            {
+                int[] correspondingIndex = new int[2 * history];
+                for(int i = 0; i < correspondingIndex.length; i++)
+                {
+                    correspondingIndex[i] = index[i + 2 * (h - history)];
+                }
+                for(int c = 0; c < nActions; c++)
+                {
+                    int newRow = newTable.arrayToInt(index);
+                    newTable.table[newRow][c] = table[arrayToInt(correspondingIndex)][c];
+                }
+                index = advanceArray(index);
+            }
         }
         return newTable;
     }
@@ -177,6 +189,36 @@ public class StrategyTable
 //            }
 //        }
         return rowNum;
+    }
+
+    private int[] advanceArray(int[] prevRow)
+    {
+        int finalIndex = prevRow.length - 1;
+        if(prevRow[finalIndex] < nOtherActions - 1)
+        {
+            prevRow[finalIndex]++;
+            return prevRow;
+        } else
+        {
+            prevRow[finalIndex] = 0;
+            return advanceArray(prevRow, finalIndex - 1);
+        }
+    }
+
+    private int[] advanceArray(int[] prevRow, int index)
+    {
+        if((index % 2 == 0 && prevRow[index] < nActions - 1) || (index % 2 == 1 && prevRow[index] < nOtherActions - 1))
+        {
+            prevRow[index]++;
+            return prevRow;
+        } else if(index > 0)
+        {
+            prevRow[index] = 0;
+            return advanceArray(prevRow, index - 1);
+        } else
+        {
+            return null;
+        }
     }
 
 }
