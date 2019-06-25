@@ -29,9 +29,14 @@ public class StrategyTable
         table[r][playerAction]++;
     }
 
+    public int getHistory()
+    {
+        return history;
+    }
+
     public int getCount(int[] state, int action)
     {
-        return table[arrayToInt(state)][action]++;
+        return table[arrayToInt(state)][action];
     }
 
     public int getTotalCount(int[] state)
@@ -43,6 +48,16 @@ public class StrategyTable
             sum += table[row][i];
         }
         return sum;
+    }
+
+    public double[] getObservationPercents(int[] state)
+    {
+        double[] percents = new double[nActions];
+        for(int i = 0; i < nActions; i++)
+        {
+            percents[i] = getPercent(state, i);
+        }
+        return percents;
     }
 
     public double getPercent(int[] state, int action)

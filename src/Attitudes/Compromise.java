@@ -73,4 +73,9 @@ public class Compromise implements Attitude
         }
         return strategy;
     }
+
+    @Override
+    public boolean isRandom() {
+        return false;
+    }
 }

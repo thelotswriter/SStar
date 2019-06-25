@@ -74,4 +74,9 @@ public class Greedy implements Attitude
         return strategy;
     }
 
+    @Override
+    public boolean isRandom() {
+        return false;
+    }
+
 }

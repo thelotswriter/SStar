@@ -10,4 +10,6 @@ public interface Attitude
 
     public StrategyTable generateSpecificStrategy(Game game);
 
+    public boolean isRandom();
+
 }

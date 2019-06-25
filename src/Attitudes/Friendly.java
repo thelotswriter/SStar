@@ -38,4 +38,9 @@ public class Friendly implements Attitude
         return null;
     }
 
+    @Override
+    public boolean isRandom() {
+        return false;
+    }
+
 }

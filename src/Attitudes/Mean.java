@@ -73,4 +73,9 @@ public class Mean implements Attitude
         }
         return strategy;
     }
+
+    @Override
+    public boolean isRandom() {
+        return false;
+    }
 }

@@ -104,4 +104,9 @@ public class Protective implements Attitude
         return strategy;
     }
 
+    @Override
+    public boolean isRandom() {
+        return false;
+    }
+
 }

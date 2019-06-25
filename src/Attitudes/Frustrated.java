@@ -34,4 +34,9 @@ public class Frustrated implements Attitude
         }
         return strategy;
     }
+
+    @Override
+    public boolean isRandom() {
+        return true;
+    }
 }
