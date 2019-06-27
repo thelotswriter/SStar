@@ -30,13 +30,18 @@ public class GeneralizeStrategy
         }
         appliedAttitudes.add(Frustrated.getInstance().generateSpecificStrategy(game));
         StrategyTable generalizedStrategy = new StrategyTable(appliedAttitudes.size(), appliedAttitudes.size(), specificStrategy.getHistory());
-        for(int h = 1; h < generalizedStrategy.getHistory(); h++)
+        Collection<Integer> nullReactionAttitudes = findCorrespondingAttitudes(null, appliedAttitudes, specificStrategy);
+        for(Integer observation : nullReactionAttitudes)
+        {
+            generalizedStrategy.addObservation(observation.intValue(), null);
+        }
+        for(int h = 1; h <= generalizedStrategy.getHistory(); h++)
         {
             int[] index = new int[2 * h];
             while(index != null)
             {
                 // Iterate through possible histories
-                Collection<int[]> specificRows = generateMatchingRows(index, appliedAttitudes);
+                Collection<int[]> specificRows = generateMatchingRows(index, appliedAttitudes); // Generate labels
                 Collection<Integer> reactionAttitudes = findCorrespondingAttitudes(specificRows, appliedAttitudes, specificStrategy);
                 for(Integer observation : reactionAttitudes)
                 {
@@ -64,30 +69,129 @@ public class GeneralizeStrategy
 
     private Collection<int[]> generateMatchingRows(int[] generalRow, ArrayList<StrategyTable> appliedAttitudes)
     {
-        return null;
+        ArrayList<Integer>[] possibleRows = new ArrayList[generalRow.length];
+        for(int i = 0; i < possibleRows.length; i++)
+        {
+            possibleRows[i] = generateMatchingAttributes(appliedAttitudes.get(generalRow[i]));
+        }
+        return expandPossibleRows(possibleRows);
     }
 
+    private ArrayList<Integer> generateMatchingAttributes(StrategyTable appliedAttitude)
+    {
+        ArrayList<Integer> matches = new ArrayList<>();
+        double[] percents = appliedAttitude.getObservationPercents(null);
+        for(int i = 0; i < percents.length; i++)
+        {
+            if(percents[i] > 0)
+            {
+                matches.add(i);
+            }
+        }
+        return matches;
+    }
+
+    private Collection<int[]> expandPossibleRows(ArrayList<Integer>[] possibleRows)
+    {
+        ArrayList<int[]> combinations = new ArrayList<>();
+        int[] iterator = new int[possibleRows.length];
+        int[] combos = new int[possibleRows.length];
+        for(int i = 0; i < combos.length; i++)
+        {
+            combos[i] = possibleRows[i].size() - 1;
+        }
+        while(iterator != null)
+        {
+            int[] expandedRow = new int[iterator.length];
+            for(int i = 0; i < expandedRow.length; i++)
+            {
+                expandedRow[i] = possibleRows[i].get(iterator[i]);
+            }
+            combinations.add(expandedRow);
+            boolean matches = true;
+            for(int i = 0; i < iterator.length; i++)
+            {
+                if(iterator[i] != combos[i])
+                {
+                    matches = false;
+                    break;
+                }
+            }
+            if(matches)
+            {
+                iterator = null;
+            } else
+            {
+                for(int i = 0; i < iterator.length; i++)
+                {
+                    if(combos[i] != 0)
+                    {
+                        if(iterator[i] < combos[i])
+                        {
+                            iterator[i]++;
+                            break;
+                        } else
+                        {
+                            iterator[i] = 0;
+                        }
+                    }
+                }
+            }
+        }
+        return combinations;
+    }
+
+    /**
+     * Creates a collection of attitudes demonstrated in the specified histories
+     * @param specificRows The histories of interest
+     * @param appliedAttitudes Possible attitudes
+     * @param specificStrategy The strategy being learned
+     * @return A collection of attitudes displayed by the specific strategy in the specificRows
+     */
     private Collection<Integer> findCorrespondingAttitudes(Collection<int[]> specificRows, ArrayList<StrategyTable> appliedAttitudes, StrategyTable specificStrategy)
     {
         ArrayList<Integer> attitudes = new ArrayList<>();
-        for(int[] row : specificRows)
+        if(specificRows == null)
         {
             double dist = Double.POSITIVE_INFINITY;
-            ArrayList<Integer> currentAttitudes = new ArrayList<>();
             for(int i = 0; i < appliedAttitudes.size(); i++)
             {
-                double currentDist = dist(specificStrategy.getObservationPercents(row), appliedAttitudes.get(i).getObservationPercents(row));
-                if(currentDist > dist)
+                double currentDist = dist(specificStrategy.getObservationPercents(null), appliedAttitudes.get(i).getObservationPercents(null));
+                if(currentDist < dist)
                 {
-                    currentAttitudes.clear();
-                    currentAttitudes.add(i);
+                    attitudes.clear();
+                    attitudes.add(i);
                     dist = currentDist;
                 } else if(currentDist == dist)
                 {
-                    currentAttitudes.add(i);
+                    attitudes.add(i);
                 }
             }
-            attitudes.addAll(currentAttitudes);
+        } else
+        {
+            for(int[] row : specificRows)
+            {
+                double dist = Double.POSITIVE_INFINITY;
+                ArrayList<Integer> currentAttitudes = new ArrayList<>();
+                for(int i = 0; i < appliedAttitudes.size(); i++)
+                {
+                    double currentDist = dist(specificStrategy.getObservationPercents(row), appliedAttitudes.get(i).getObservationPercents(row));
+                    if(currentDist < dist)
+                    {
+                        currentAttitudes.clear();
+                        currentAttitudes.add(i);
+                        dist = currentDist;
+                    } else if(currentDist == dist)
+                    {
+                        currentAttitudes.add(i);
+                    }
+                }
+                attitudes.addAll(currentAttitudes);
+            }
+        }
+        if(attitudes.isEmpty())
+        {
+            attitudes.add(appliedAttitudes.size() - 1);
         }
         return attitudes;
     }
