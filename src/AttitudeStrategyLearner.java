@@ -25,7 +25,7 @@ public class AttitudeStrategyLearner
         {
             Collection<StrategyTable>[] clusters = cluster(representativeStrategies, attitudeStrategyData);
             representativeStrategies = calculateCentroids(clusters);
-            double score = score(clusters, representativeStrategies);
+            double score = score(clusters);
             if(score == lastScore)
             {
                 countdown--;
@@ -77,6 +77,10 @@ public class AttitudeStrategyLearner
     private Collection<StrategyTable>[] cluster(StrategyTable[] centroids, Collection<StrategyTable> data)
     {
         Collection<StrategyTable>[] clusters = new Collection[centroids.length];
+        for(int i = 0; i < clusters.length; i++)
+        {
+            clusters[i] = new ArrayList<>();
+        }
         for(StrategyTable datum : data)
         {
             int closestIndex = 0;
@@ -132,15 +136,71 @@ public class AttitudeStrategyLearner
         return currentBest;
     }
 
-    private double score(Collection<StrategyTable>[] clusters, StrategyTable[] centroids)
+    private double score(Collection<StrategyTable>[] clusters)
     {
-        
-        return 0;
+        double score = 0;
+        for(Collection<StrategyTable> cluster : clusters)
+        {
+            score += averageSilhouette(cluster, clusters);
+        }
+        return score;
+    }
+
+    private double averageSilhouette(Collection<StrategyTable> cluster, Collection<StrategyTable>[] clusters)
+    {
+        double s = 0;
+        for(StrategyTable dataPoint : cluster)
+        {
+            double a = 0;
+            double b = Double.POSITIVE_INFINITY;
+            for(Collection<StrategyTable> otherCluster : clusters)
+            {
+                if(cluster == otherCluster)
+                {
+                    for(StrategyTable otherDataPoint : cluster)
+                    {
+                        a += dist(dataPoint, otherDataPoint);
+                    }
+                    if(cluster.size() > 1)
+                    {
+                        a = a / ((double) cluster.size() - 1);
+                    }
+                } else
+                {
+                    double avgDissimilarity = 0;
+                    for(StrategyTable otherDataPoint : otherCluster)
+                    {
+                        avgDissimilarity += dist(dataPoint, otherDataPoint);
+                    }
+                    avgDissimilarity = avgDissimilarity / ((double) otherCluster.size());
+                    if(avgDissimilarity < b)
+                    {
+                        b = avgDissimilarity;
+                    }
+                }
+            }
+            if(a < b)
+            {
+                s += 1 - a / b;
+            } else if(a > b)
+            {
+                s += b / a - 1;
+            }
+        }
+        return s;
     }
 
     private double dist(StrategyTable s1, StrategyTable s2)
     {
-        return 0;
+        if(s1 == null)
+        {
+            boolean check = !true;
+        }
+        if(s2 == null)
+        {
+            boolean check = !false;
+        }
+        return s1.calculateDissimilarity(s2);
     }
 
     private double averageDistance(Collection<StrategyTable> cluster, StrategyTable dataPoint)

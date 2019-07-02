@@ -10,6 +10,8 @@ public class StrategyTable
     private int nOtherActions;
     private int history;
 
+    private double[][] percentTable;
+
     public StrategyTable(int nActions, int nOtherActions, int history)
     {
         this.nActions = nActions;
@@ -21,12 +23,14 @@ public class StrategyTable
             rows += Math.pow(nActions * nOtherActions, h);
         }
         table = new int[rows][nActions];
+        percentTable = null;
     }
 
     public void addObservation(int playerAction, int[] previousState)
     {
         int r = arrayToInt(previousState);
         table[r][playerAction]++;
+        percentTable = null;
     }
 
     public int getHistory()
@@ -72,6 +76,54 @@ public class StrategyTable
         }
     }
 
+    /**
+     * Calculates the dissimilarity of two tables
+     * @param otherTable The table whose dissimilarity is being measured from this table
+     * @return A dissimilarity score, zero or greater.
+     */
+    public double calculateDissimilarity(StrategyTable otherTable)
+    {
+        if(percentTable == null)
+        {
+            fillPercentTable();
+        }
+        if(otherTable.percentTable == null)
+        {
+            return otherTable.calculateDissimilarity(this);
+        } else
+        {
+            double dist = 0;
+            for(int r = 0; r < percentTable.length; r++)
+            {
+                for(int c = 0; c < percentTable[r].length; c++)
+                {
+                    dist += Math.abs(percentTable[r][c] - otherTable.percentTable[r][c]);
+                }
+            }
+            return dist;
+        }
+    }
+
+    private void fillPercentTable()
+    {
+        percentTable = new double[table.length][table[0].length];
+        for(int r = 0; r < table.length; r++)
+        {
+            double sum = 0;
+            for(int c = 0; c < table[r].length; c++)
+            {
+                sum += table[r][c];
+            }
+            if(sum > 0)
+            {
+                for(int c = 0; c < table[r].length; c++)
+                {
+                    percentTable[r][c] = ((double) table[r][c] / sum);
+                }
+            }
+        }
+    }
+
     public StrategyTable generateResizedTable(int newHistory)
     {
         if(newHistory == history)
@@ -95,7 +147,7 @@ public class StrategyTable
     private StrategyTable generateCollapsedTable(int newHistory)
     {
         StrategyTable newTable = new StrategyTable(nActions, nOtherActions, newHistory);
-
+        //TODO: Code if needed
         return newTable;
     }
 
