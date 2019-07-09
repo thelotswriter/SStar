@@ -1,5 +1,6 @@
 import Attitudes.*;
 import Automata.GameToAutomata;
+import Exceptions.NotEnoughOptionsException;
 import Game.CSVtoGame;
 import Game.Game;
 import StrategyTables.GameToTable;
@@ -39,7 +40,7 @@ public class Main
             System.out.println("=============================");
             for(Game game : games)
             {
-                tables.add(GameToTable.getInstance().convertToTable(game, 0));
+                tables.add(GameToTable.getInstance().convertToTable(game, 1));
             }
             StrategyTable combinedTable = StrategyTable.merge(tables);
             combinedTable.print();
@@ -100,16 +101,22 @@ public class Main
             {
                 generalizedStrategies.add(GeneralizeStrategy.getInstance().convertToAttitudeStrategy(games.get(i), tables.get(i), attitudes));
             }
-            Collection<StrategyTable> learnedStrategies = AttitudeStrategyLearner.getInstance().learnStrategies(3, generalizedStrategies, 100);
-            System.out.println("==========================================================");
-            System.out.println("=================LEARNED STRATEGIES=======================");
-            System.out.println("==========================================================");
-            for (StrategyTable learnedStrategy : learnedStrategies)
-            {
-                learnedStrategy.print();
+            Collection<StrategyTable> learnedStrategies = null;
+            try {
+                learnedStrategies = AttitudeStrategyLearner.getInstance().learnStrategies(3, generalizedStrategies, 100);
                 System.out.println("==========================================================");
+                System.out.println("=================LEARNED STRATEGIES=======================");
+                System.out.println("==========================================================");
+                for (StrategyTable learnedStrategy : learnedStrategies)
+                {
+                    learnedStrategy.print();
+                    System.out.println("==========================================================");
+                }
+                System.out.println("Success!");
+            } catch (NotEnoughOptionsException e) {
+                System.err.println();
             }
-            System.out.println("Success!");
+
         }
     }
 

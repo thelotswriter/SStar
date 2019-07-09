@@ -1,3 +1,4 @@
+import Exceptions.NotEnoughOptionsException;
 import StrategyTables.StrategyTable;
 
 import java.util.ArrayList;
@@ -15,8 +16,7 @@ public class AttitudeStrategyLearner
 
     private AttitudeStrategyLearner() {}
 
-    public Collection<StrategyTable> learnStrategies(int numStrategies, Collection<StrategyTable> attitudeStrategyData, int maxEpochs)
-    {
+    public Collection<StrategyTable> learnStrategies(int numStrategies, Collection<StrategyTable> attitudeStrategyData, int maxEpochs) throws NotEnoughOptionsException {
         StrategyTable[] representativeStrategies = initializeCentroids(numStrategies, attitudeStrategyData);
         int countdownMax = 10;
         int countdown = countdownMax;
@@ -44,32 +44,33 @@ public class AttitudeStrategyLearner
         return learnedStrategies;
     }
 
-    private StrategyTable[] initializeCentroids(int k, Collection<StrategyTable> strategyData)
-    {
+    private StrategyTable[] initializeCentroids(int k, Collection<StrategyTable> strategyData) throws NotEnoughOptionsException {
         int[] rands = new int[k];
         Random rand = new Random();
         boolean chosen = false;
-        while(!chosen)
+        int countdown = 1000;
+        ArrayList<StrategyTable> orderedData = new ArrayList<>(strategyData);
+        StrategyTable[] centroids = new StrategyTable[rands.length];
+        while(!chosen || countdown <= 0)
         {
+            if(countdown <= 0)
+            {
+                throw new NotEnoughOptionsException();
+            }
             chosen = true;
             for(int i = 0; i < k; i++)
             {
-                rands[i] = rand.nextInt();
+                centroids[i] = orderedData.get(rand.nextInt(orderedData.size()));
                 for(int j = 0; j < i; j++)
                 {
-                    if(rands[j] == rands[i])
+                    if(dist(orderedData.get(rands[j]), orderedData.get(rands[i])) == 0.0)
                     {
                         chosen = false;
                         break;
                     }
                 }
             }
-        }
-        ArrayList<StrategyTable> orderedData = new ArrayList<>(strategyData);
-        StrategyTable[] centroids = new StrategyTable[rands.length];
-        for(int i = 0; i < rands.length; i++)
-        {
-            centroids[i] = orderedData.get(i);
+            countdown--;
         }
         return centroids;
     }
