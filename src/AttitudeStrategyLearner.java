@@ -16,6 +16,51 @@ public class AttitudeStrategyLearner
 
     private AttitudeStrategyLearner() {}
 
+    public Collection<StrategyTable> learnStrategies(int minNumStrategies, int maxNumStrategies, Collection<StrategyTable> attitudeStrategyData, int maxEpochs)
+    {
+        Collection<StrategyTable> bestClustering = new ArrayList<>();
+        double bestClusteringScore = Double.POSITIVE_INFINITY;
+        Collection<StrategyTable> learnedStrategies = new ArrayList<>();
+        try
+        {
+            for(int k = minNumStrategies; k <= maxNumStrategies; k++)
+            {
+                StrategyTable[] representativeStrategies = initializeCentroids(k, attitudeStrategyData);
+                int countdownMax = 10;
+                int countdown = countdownMax;
+                double lastScore = 0;
+                while(maxEpochs > 0 && countdown > 0)
+                {
+                    Collection<StrategyTable>[] clusters = cluster(representativeStrategies, attitudeStrategyData);
+                    representativeStrategies = calculateCentroids(clusters);
+                    double score = score(clusters);
+                    if(score == lastScore)
+                    {
+                        countdown--;
+                    } else
+                    {
+                        countdown = countdownMax;
+                    }
+                    lastScore = score;
+                    maxEpochs--;
+                }
+                if(lastScore < bestClusteringScore)
+                {
+                    bestClusteringScore = lastScore;
+                    bestClustering.clear();
+                    for(StrategyTable representativeStrategy : representativeStrategies)
+                    {
+                        bestClustering.add(representativeStrategy);
+                    }
+                }
+            }
+        } catch (NotEnoughOptionsException e) {}
+        finally
+        {
+            return bestClustering;
+        }
+    }
+
     public Collection<StrategyTable> learnStrategies(int numStrategies, Collection<StrategyTable> attitudeStrategyData, int maxEpochs) throws NotEnoughOptionsException {
         StrategyTable[] representativeStrategies = initializeCentroids(numStrategies, attitudeStrategyData);
         int countdownMax = 10;
