@@ -88,7 +88,7 @@ public class Main
             System.out.println("==========================================================");
             System.out.println("=================GENERAL STRATEGIES=======================");
             System.out.println("==========================================================");
-            Collection<Attitude> attitudes = new ArrayList<>();
+            ArrayList<Attitude> attitudes = new ArrayList<>();
             attitudes.add(Greedy.getInstance());
 //            attitudes.add(Mean.getInstance());
             attitudes.add(Placate.getInstance());
