@@ -40,21 +40,22 @@ public class AttitudeStrategyApplicator
                 appliedStrategy.addObservation(observation.intValue(), null);
             }
 
-//            for(int h = 1; h <= generalizedStrategy.getHistory(); h++)
-//            {
-//                int[] index = new int[2 * h];
-//                while(index != null)
-//                {
-//                    // Iterate through possible histories
-//                    Collection<int[]> specificRows = generateMatchingRows(index, appliedAttitudes); // Generate labels
-//                    Collection<Integer> reactionAttitudes = findCorrespondingAttitudes(specificRows, appliedAttitudes, specificStrategy);
-//                    for(Integer observation : reactionAttitudes)
-//                    {
-//                        generalizedStrategy.addObservation(observation.intValue(), index);
-//                    }
-//                    index = advanceArray(index, appliedAttitudes.size(), appliedAttitudes.size());
-//                }
-//            }
+            for(int h = 1; h <= attitudeStrategy.getHistory(); h++)
+            {
+                int[] index = new int[2 * h];
+                while(index != null)
+                {
+                    // Iterate through possible histories
+                    Collection<int[]> generalRows = generateMatchingRows(index, appliedAttitudes); // Generate labels
+                    Collection<Integer> reactionAttitudes = findCorrespondingStrategies(generalRows, appliedAttitudes, attitudeStrategy);
+                    for(Integer observation : reactionAttitudes)
+                    {
+                        attitudeStrategy.addObservation(observation.intValue(), index);
+                    }
+                    index = advanceArray(index, appliedAttitudes.size(), appliedAttitudes.size());
+                }
+            }
+            appliedStrategies.add(appliedStrategy);
         }
         return appliedStrategies;
     }
@@ -62,6 +63,46 @@ public class AttitudeStrategyApplicator
     private Collection<Integer> findCorrespondingActions(Collection<int[]> generalRows, ArrayList<StrategyTable> appliedAttitudes, StrategyTable attitudeStrategy)
     {
         return null;
+    }
+
+    private Collection<int[]> generateMatchingRows(int[] index, ArrayList<StrategyTable> appliedAttitudes)
+    {
+        return null;
+    }
+
+    private Collection<Integer> findCorrespondingStrategies(Collection<int[]> generalRows, ArrayList<StrategyTable> appliedAttitudes, StrategyTable attitudeStrategy)
+    {
+        return null;
+    }
+
+    private int[] advanceArray(int[] prevRow, int nActions, int nOtherActions)
+    {
+        int finalIndex = prevRow.length - 1;
+        if(prevRow[finalIndex] < nOtherActions - 1)
+        {
+            prevRow[finalIndex]++;
+            return prevRow;
+        } else
+        {
+            prevRow[finalIndex] = 0;
+            return advanceArray(prevRow, nActions, nOtherActions, finalIndex - 1);
+        }
+    }
+
+    private int[] advanceArray(int[] prevRow, int nActions, int nOtherActions, int index)
+    {
+        if((index % 2 == 0 && prevRow[index] < nActions - 1) || (index % 2 == 1 && prevRow[index] < nOtherActions - 1))
+        {
+            prevRow[index]++;
+            return prevRow;
+        } else if(index > 0)
+        {
+            prevRow[index] = 0;
+            return advanceArray(prevRow, nActions, nOtherActions, index - 1);
+        } else
+        {
+            return null;
+        }
     }
 
 }
