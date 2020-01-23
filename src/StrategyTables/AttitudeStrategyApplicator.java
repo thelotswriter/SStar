@@ -33,28 +33,65 @@ public class AttitudeStrategyApplicator
         for(StrategyTable attitudeStrategy : attitudeStrategies)
         {
             StrategyTable appliedStrategy = new StrategyTable(game.getNumRowActions(), game.getNumColActions(), attitudeStrategy.getHistory());
+            StrategyPercentTable probabilityTable = new StrategyPercentTable(game.getNumRowActions(), game.getNumColActions(), attitudeStrategy.getHistory());
 
-            Collection<Integer> nullReactionAttitudes = findCorrespondingActions(null, appliedAttitudes, attitudeStrategy);
-            for(Integer observation : nullReactionAttitudes)
+            // Initial (no history) Case
+            double[] attitudeStrategyInitialPercents = attitudeStrategy.getObservationPercents(null);
+            for(int i = 0; i < attitudeStrategyInitialPercents.length; i++)
             {
-                appliedStrategy.addObservation(observation.intValue(), null);
+                double[] appliedAttitudePercents = appliedAttitudes.get(i).getObservationPercents(null);
+                for(int j = 0; j < appliedAttitudePercents.length; j++)
+                {
+                    probabilityTable.addObservation(j, null, attitudeStrategyInitialPercents[i] * appliedAttitudePercents[j]);
+                }
             }
 
+            // With history
             for(int h = 1; h <= attitudeStrategy.getHistory(); h++)
             {
                 int[] index = new int[2 * h];
                 while(index != null)
                 {
-                    // Iterate through possible histories
-                    Collection<int[]> generalRows = generateMatchingRows(index, appliedAttitudes); // Generate labels
-                    Collection<Integer> reactionAttitudes = findCorrespondingStrategies(generalRows, appliedAttitudes, attitudeStrategy);
-                    for(Integer observation : reactionAttitudes)
+                    Collection<int[]> correspondingActionHistories = generateMatchingRows(index, appliedAttitudes);
+                    double[] attitudeStrategyPercents = attitudeStrategy.getObservationPercents(index);
+                    for(int[] possibleActionHistory : correspondingActionHistories)
                     {
-                        attitudeStrategy.addObservation(observation.intValue(), index);
+                        for(int i = 0; i < attitudeStrategyPercents.length; i++)
+                        {
+                            double[] appliedAttitudePercents = appliedAttitudes.get(i).getObservationPercents(null);
+                            for(int j = 0; j < appliedAttitudePercents.length; j++)
+                            {
+                                probabilityTable.addObservation(j, possibleActionHistory, attitudeStrategyPercents[i] * appliedAttitudePercents[j]);
+                            }
+                        }
                     }
+                    // Move the index along. Check that this is correct
                     index = advanceArray(index, appliedAttitudes.size(), appliedAttitudes.size());
                 }
             }
+
+//
+//            Collection<Integer> nullReactionAttitudes = findCorrespondingActions(null, appliedAttitudes, attitudeStrategy);
+//            for(Integer observation : nullReactionAttitudes)
+//            {
+//                appliedStrategy.addObservation(observation.intValue(), null);
+//            }
+//
+//            for(int h = 1; h <= attitudeStrategy.getHistory(); h++)
+//            {
+//                int[] index = new int[2 * h];
+//                while(index != null)
+//                {
+//                    // Iterate through possible histories
+//                    Collection<int[]> generalRows = generateMatchingRows(index, appliedAttitudes); // Generate labels
+//                    Collection<Integer> reactionAttitudes = findCorrespondingStrategies(generalRows, appliedAttitudes, attitudeStrategy);
+//                    for(Integer observation : reactionAttitudes)
+//                    {
+//                        attitudeStrategy.addObservation(observation.intValue(), index);
+//                    }
+//                    index = advanceArray(index, appliedAttitudes.size(), appliedAttitudes.size());
+//                }
+//            }
             appliedStrategies.add(appliedStrategy);
         }
         return appliedStrategies;

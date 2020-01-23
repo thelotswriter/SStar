@@ -76,6 +76,11 @@ public class StrategyTable
         }
     }
 
+    public int getNumRows()
+    {
+        return table.length;
+    }
+
     /**
      * Calculates the dissimilarity of two tables
      * @param otherTable The table whose dissimilarity is being measured from this table
@@ -224,7 +229,7 @@ public class StrategyTable
         return sT;
     }
 
-    private int arrayToInt(int[] row)
+    protected int arrayToInt(int[] row)
     {
         int len = 0;
         if(row != null)
