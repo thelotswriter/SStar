@@ -247,7 +247,29 @@ public class TXTtoGame
         ArrayList<SpeechAct> listedSpeechActs = new ArrayList<>();
         for(int i = 0; i < splitData.length - 1; i++)
         {
-            // TODO: This
+            if(splitData[i].contains(" "))
+            {
+                String[] splitMessage = splitData[i].split(" ");
+                int mNum = Integer.parseInt(splitMessage[0]);
+                switch (mNum)
+                {
+                    case 15:
+                    {
+
+                    } case 16:
+                    {
+                        
+                        break;
+                    } case 17:
+                    {
+
+                        break;
+                    } case 18:
+                    {
+
+                    }
+                }
+            }
         }
         if(listedSpeechActs.isEmpty())
         {
