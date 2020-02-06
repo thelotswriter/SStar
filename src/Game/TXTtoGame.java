@@ -258,15 +258,40 @@ public class TXTtoGame
 
                     } case 16:
                     {
-                        
+                        int[] jointAction = stringToJointAction(splitMessage[1]);
+                        if(playerNum == 2)
+                        {
+                            int temp = jointAction[1];
+                            jointAction[1] = jointAction[0];
+                            jointAction[0] = temp;
+                        }
+                        listedSpeechActs.add(new SpeechAct(true, jointAction));
                         break;
                     } case 17:
                     {
-
+                        int[] jointAction = stringToJointAction(splitMessage[1]);
+                        if(playerNum == 2)
+                        {
+                            int temp = jointAction[1];
+                            jointAction[1] = jointAction[0];
+                            jointAction[0] = temp;
+                        }
+                        listedSpeechActs.add(new SpeechAct(false, jointAction));
                         break;
                     } case 18:
                     {
-
+                        int[] jointAction1 = stringToJointAction(splitMessage[1]);
+                        int[] jointAction2 = stringToJointAction(splitMessage[2]);
+                        if(playerNum == 2)
+                        {
+                            int temp = jointAction1[1];
+                            jointAction1[1] = jointAction1[0];
+                            jointAction1[0] = temp;
+                            temp = jointAction2[1];
+                            jointAction2[1] = jointAction2[0];
+                            jointAction2[0] = temp;
+                        }
+                        listedSpeechActs.add(new SpeechAct(true, jointAction1, jointAction2));
                     }
                 }
             }
@@ -281,6 +306,132 @@ public class TXTtoGame
             sAArray[i] = listedSpeechActs.get(i);
         }
         return sAArray;
+    }
+
+    private int[] stringToJointAction(String str)
+    {
+        int[] jointAction = new int[2];
+        if(str.length() == 1)
+        {
+            if(matrix.length < 3)
+            {
+                switch (str.charAt(0))
+                {
+                    case 'A':
+                    {
+                        jointAction[0] = 0;
+                        break;
+                    } case 'B':
+                    {
+                        jointAction[0] = 1;
+                        break;
+                    } case 'C':
+                    {
+                        jointAction[1] = 0;
+                        break;
+                    } case 'D':
+                    {
+                        jointAction[1] = 1;
+                    }
+                }
+            } else
+            {
+                switch (str.charAt(0))
+                {
+                    case 'A':
+                    {
+                        jointAction[0] = 0;
+                        break;
+                    } case 'B':
+                    {
+                        jointAction[0] = 1;
+                        break;
+                    } case 'C':
+                    {
+                        jointAction[0] = 2;
+                        break;
+                    } case 'D':
+                    {
+                        jointAction[1] = 0;
+                        break;
+                    } case 'E':
+                    {
+                        jointAction[1] = 1;
+                        break;
+                    } case 'F':
+                    {
+                        jointAction[1] = 2;
+                    }
+                }
+            }
+        } else
+        {
+            char[] jointActionLabels = new char[2];
+            jointActionLabels[0] = str.charAt(0);
+            jointActionLabels[1] = str.charAt(1);
+            if(matrix.length < 3)
+            {
+                switch (jointActionLabels[0])
+                {
+                    case 'A':
+                    {
+                        jointAction[0] = 0;
+                        break;
+                    } case 'B':
+                {
+                    jointAction[0] = 1;
+                    break;
+                }
+                }
+                switch (jointActionLabels[1])
+                {
+                    case 'C':
+                    {
+                        jointAction[1] = 0;
+                        break;
+                    } case 'D':
+                {
+                    jointAction[1] = 1;
+                    break;
+                }
+                }
+            } else
+            {
+                switch (jointActionLabels[0])
+                {
+                    case 'A':
+                    {
+                        jointAction[0] = 0;
+                        break;
+                    } case 'B':
+                {
+                    jointAction[0] = 1;
+                    break;
+                } case 'C':
+                {
+                    jointAction[0] = 2;
+                    break;
+                }
+                }
+                switch (jointActionLabels[1])
+                {
+                    case 'D':
+                    {
+                        jointAction[1] = 0;
+                        break;
+                    } case 'E':
+                {
+                    jointAction[1] = 1;
+                    break;
+                } case 'F':
+                {
+                    jointAction[1] = 2;
+                    break;
+                }
+                }
+            }
+        }
+        return jointAction;
     }
 
 }

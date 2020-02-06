@@ -4,21 +4,26 @@ public class SpeechAct
 {
 
     private boolean positiveCommand;
-    private int[] act;
+    private int[] act1;
+    private int[] act2;
 
-    public SpeechAct(boolean affirmative, int act)
+    public SpeechAct(boolean affirmative, int[] jointAct)
     {
         positiveCommand = affirmative;
-        this.act = new int[1];
-        this.act[0] = act;
+        act1 = new int[2];
+        act1[0] = jointAct[0];
+        act1[1] = jointAct[1];
     }
 
-    public SpeechAct(boolean affirmative, int act1, int act2)
+    public SpeechAct(boolean affirmative, int[] jointAct1, int[] jointAct2)
     {
         positiveCommand = affirmative;
-        act = new int[2];
-        act[0] = act1;
-        act[1] = act2;
+        act1 = new int[2];
+        act1[0] = jointAct1[0];
+        act1[1] = jointAct1[1];
+        act2 = new int[2];
+        act2[0] = jointAct2[0];
+        act2[1] = jointAct2[1];
     }
 
     public boolean getAffirmative()
@@ -28,17 +33,23 @@ public class SpeechAct
 
     public int size()
     {
-        return act.length;
+        if(act2 == null)
+        {
+            return 1;
+        } else
+        {
+            return 2;
+        }
     }
 
-    public int getFirstAction()
+    public int[] getJointAction()
     {
-        return act[0];
+        return act1;
     }
 
-    public int getSecondAction()
+    public int[] getSecondJointAction()
     {
-        return act[1];
+        return act2;
     }
 
 }
