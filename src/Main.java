@@ -3,6 +3,7 @@ import Automata.GameToAutomata;
 import Exceptions.NotEnoughOptionsException;
 import Game.CSVtoGame;
 import Game.Game;
+import Game.TXTtoGame;
 import StrategyTables.GameToTable;
 import StrategyTables.GeneralizeStrategy;
 import StrategyTables.StrategyTable;
@@ -30,17 +31,24 @@ public class Main
         {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setMultiSelectionEnabled(true);
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV Files", "csv");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("TXT Files", "txt");
             fileChooser.setFileFilter(filter);
             int returnVal = fileChooser.showOpenDialog(null);
             File[] files = fileChooser.getSelectedFiles();
             ArrayList<StrategyTable> tables = new ArrayList<>();
             ArrayList<Game> games = new ArrayList<>();
-            for(File file : files)
+            for(int f = 0; f < files.length / 2; f++)
             {
-                games.add(CSVtoGame.getInstance().openFile(file.getPath()));
+                TXTtoGame txtToGame = new TXTtoGame();
+                games.add(txtToGame.openFile(files[f / 2].getPath(), files[f / 2 + 1].getPath()));
             }
-            graphFeatures(games);
+//            for(File file : files)
+//            {
+//                TXTtoGame txtToGame = new TXTtoGame();
+//                games.add(txtToGame.openFile())
+////                games.add(TXTtoGame.getInstance().openFile(file.getPath()));
+//            }
+            graphFeatures(files, games);
 
 //            games.get(0).getPayoffMatrix().print();
 //            System.out.println("=============================");
@@ -126,31 +134,39 @@ public class Main
         }
     }
 
-    private static void graphFeatures(ArrayList<Game> games)
+    private static void graphFeatures(File[] files, ArrayList<Game> games)
     {
-        int fileNum = 0;
-        boolean lastFound = false;
-        while(!lastFound)
+
+        for(int g = 0; g < games.size(); g++)
         {
-            fileNum++;
+            String fileBase = files[g * 2].getPath().substring(0, files[g * 2].getPath().indexOf("_activity_"));
+            int fileNum = 0;
+            boolean lastFound = false;
+            while(!lastFound)
+            {
+                fileNum++;
+                StringBuilder builder = new StringBuilder();
+                builder.append(fileBase);
+                builder.append(fileNum);
+                builder.append(".csv");
+                File file = new File(builder.toString());
+                lastFound = !file.exists();
+            }
+            GameToFeatureList gameToFeatures = new GameToFeatureList(games.get(g));
+            List<Feature> gameFeatures = gameToFeatures.generateRawFeatureList();
             StringBuilder builder = new StringBuilder();
-            builder.append("FeatureData");
-            builder.append(fileNum);
-            builder.append(".csv");
-            File file = new File(builder.toString());
-            lastFound = !file.exists();
-        }
-        for(Game game : games)
-        {
-            GameToRawFeatureList gameToFeatures = new GameToRawFeatureList(game);
-            List<Feature> gameFeatures = gameToFeatures.generatePlayer1FeatureList();
-            StringBuilder builder = new StringBuilder();
-            builder.append("FeatureData");
+            builder.append(fileBase);
             builder.append(fileNum);
             builder.append(".csv");
             String path = builder.toString();
             try(FileWriter fWriter = new FileWriter(path))
             {
+                String header = "Greed Displayed,Placate Displayed,Cooperation Displayed,Absurdity Displayed," +
+                        "Greed Said,Placate Said,Cooperation Said,Absurdity Said," +
+                        "Greed Other Did,Placate Other Did,Cooperation Other Did,Absurdity Other Did," +
+                        "Integrity,Deference";
+                fWriter.append(header);
+                fWriter.append('\n');
                 for(int i = 0; i < gameFeatures.size(); i++)
                 {
                     StringBuilder b = new StringBuilder();
@@ -161,6 +177,26 @@ public class Main
                     b.append(gameFeatures.get(i).getAttitudeDisplayed().getCooperate());
                     b.append(",");
                     b.append(gameFeatures.get(i).getAttitudeDisplayed().getAbsurd());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getAttitudeSaid().getGreedy());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getAttitudeSaid().getPlacate());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getAttitudeSaid().getCooperate());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getAttitudeSaid().getAbsurd());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getOtherAttitudeDisplayed().getGreedy());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getOtherAttitudeDisplayed().getPlacate());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getOtherAttitudeDisplayed().getCooperate());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getOtherAttitudeDisplayed().getAbsurd());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getIntegrity());
+                    b.append(",");
+                    b.append(gameFeatures.get(i).getDeference());
                     fWriter.append(b.toString());
                     fWriter.append('\n');
                 }
@@ -168,6 +204,61 @@ public class Main
                 e.printStackTrace();
             }
             fileNum++;
+        }
+        for(Game game : games)
+        {
+//            GameToRawFeatureList gameToFeatures = new GameToRawFeatureList(game);
+//            List<Feature> gameFeatures = gameToFeatures.generatePlayer1FeatureList();
+//            StringBuilder builder = new StringBuilder();
+//            builder.append("FeatureData");
+//            builder.append(fileNum);
+//            builder.append(".csv");
+//            String path = builder.toString();
+//            try(FileWriter fWriter = new FileWriter(path))
+//            {
+//                String header = "Greed Displayed,Placate Displayed,Cooperation Displayed,Absurdity Displayed," +
+//                        "Greed Said,Placate Said,Cooperation Said,Absurdity Said," +
+//                        "Greed Other Did,Placate Other Did,Cooperation Other Did,Absurdity Other Did," +
+//                        "Integrity,Deference";
+//                fWriter.append(header);
+//                fWriter.append('\n');
+//                for(int i = 0; i < gameFeatures.size(); i++)
+//                {
+//                    StringBuilder b = new StringBuilder();
+//                    b.append(gameFeatures.get(i).getAttitudeDisplayed().getGreedy());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getAttitudeDisplayed().getPlacate());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getAttitudeDisplayed().getCooperate());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getAttitudeDisplayed().getAbsurd());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getAttitudeSaid().getGreedy());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getAttitudeSaid().getPlacate());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getAttitudeSaid().getCooperate());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getAttitudeSaid().getAbsurd());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getOtherAttitudeDisplayed().getGreedy());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getOtherAttitudeDisplayed().getPlacate());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getOtherAttitudeDisplayed().getCooperate());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getOtherAttitudeDisplayed().getAbsurd());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getIntegrity());
+//                    b.append(",");
+//                    b.append(gameFeatures.get(i).getDeference());
+//                    fWriter.append(b.toString());
+//                    fWriter.append('\n');
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            fileNum++;
         }
     }
 

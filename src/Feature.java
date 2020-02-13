@@ -54,7 +54,7 @@ public class Feature
 
     public void setAttitudeDisplayed(AttitudeVector newAttitudeDisplayed)
     {
-        attitudeSaid = new AttitudeVector(newAttitudeDisplayed);
+        attitudeDisplayed = new AttitudeVector(newAttitudeDisplayed);
     }
 
     public void setAttitudeSaid(AttitudeVector newAttitudeSaid)

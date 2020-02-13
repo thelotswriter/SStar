@@ -12,6 +12,11 @@ public class TXTtoGame
 
     private double[][][] matrix;
 
+    public TXTtoGame()
+    {
+
+    }
+
     public Game openFile(String activityPath, String messagePath)
     {
         ArrayList<String[]> activityStrings = readActivityFile(activityPath);
@@ -26,12 +31,12 @@ public class TXTtoGame
         ArrayList<String[]> data = new ArrayList<String[]>();
         try(BufferedReader buffy = new BufferedReader(new FileReader(path)))
         {
-            String line = buffy.readLine();
-            if(line == null)
-            {
-                buffy.close();
-                return null;
-            }
+            String line; // = buffy.readLine();
+//            if(line == null)
+//            {
+//                buffy.close();
+//                return null;
+//            }
             while ((line = buffy.readLine()) != null)
             {
                 String[] cells = line.split("\t");
@@ -109,15 +114,15 @@ public class TXTtoGame
         {
             int act1 = Integer.parseInt(activityData.get(i)[0]);
             int act2 = Integer.parseInt(activityData.get(i)[1]);
-            if(act1 > numActions)
+            if(act1 + 1 > numActions)
             {
-                numActions = act1;
+                numActions = act1 + 1;
             }
-            if(act2 > numActions)
+            if(act2 + 1 > numActions)
             {
-                numActions = act2;
+                numActions = act2 + 1;
             }
-            if(numActions >= 2)
+            if(numActions >= 3)
             {
                 break;
             }
@@ -149,7 +154,7 @@ public class TXTtoGame
                     checkedMatrix[act2][act1] = true;
                     numChecked += 2;
                 }
-                if(numChecked >= matrix.length * matrix[i].length)
+                if(numChecked >= matrix.length * matrix[0].length)
                 {
                     break;
                 }

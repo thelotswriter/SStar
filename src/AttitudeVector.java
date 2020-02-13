@@ -9,6 +9,7 @@ public class AttitudeVector
 
     public AttitudeVector(AttitudeVector otherAttitudeVector)
     {
+        vector = new double[4];
         vector[0] = otherAttitudeVector.vector[0];
         vector[1] = otherAttitudeVector.vector[1];
         vector[2] = otherAttitudeVector.vector[2];
@@ -25,17 +26,17 @@ public class AttitudeVector
         normalize();
     }
 
-    public double getCooperate()
+    public double getGreedy()
     {
         return vector[0];
     }
 
-    public double getGreedy()
+    public double getPlacate()
     {
         return vector[1];
     }
 
-    public double getPlacate()
+    public double getCooperate()
     {
         return vector[2];
     }
@@ -47,19 +48,19 @@ public class AttitudeVector
 
     public void setCooperate(double cooperate)
     {
-        vector[0] = cooperate;
+        vector[2] = cooperate;
         normalize();
     }
 
     public void setGreedy(double greedy)
     {
-        vector[1] = greedy;
+        vector[0] = greedy;
         normalize();
     }
 
     public void setPlacate(double placate)
     {
-        vector[2] = placate;
+        vector[1] = placate;
         normalize();
     }
 
@@ -69,12 +70,12 @@ public class AttitudeVector
         normalize();
     }
 
-    public void setAttitudeVector(double cooperate, double greedy, double placate, double absurd)
+    public void setAttitudeVector(double greedy, double placate, double cooperate, double absurd)
     {
         vector = new double[4];
-        vector[0] = cooperate;
-        vector[1] = greedy;
-        vector[2] = placate;
+        vector[0] = greedy;
+        vector[1] = placate;
+        vector[2] = cooperate;
         vector[3] = absurd;
         normalize();
     }
@@ -89,7 +90,7 @@ public class AttitudeVector
         if(!isZero())
         {
             double sum = 0;
-            sum += Math.abs(vector[9]);
+            sum += Math.abs(vector[0]);
             sum += Math.abs(vector[1]);
             sum += Math.abs(vector[2]);
             sum += Math.abs(vector[3]);
