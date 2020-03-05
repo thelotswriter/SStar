@@ -40,7 +40,7 @@ public class Main
             for(int f = 0; f < files.length / 2; f++)
             {
                 TXTtoGame txtToGame = new TXTtoGame();
-                games.add(txtToGame.openFile(files[f / 2].getPath(), files[f / 2 + 1].getPath()));
+                games.add(txtToGame.openFile(files[f * 2].getPath(), files[f * 2 + 1].getPath()));
             }
 //            for(File file : files)
 //            {
@@ -139,7 +139,22 @@ public class Main
 
         for(int g = 0; g < games.size(); g++)
         {
-            String fileBase = files[g * 2].getPath().substring(0, files[g * 2].getPath().indexOf("_activity_"));
+            int neighbors = 5;
+            double discount = 0.9;
+            double predictive = 0.5;
+            int discountLabel = (int) (100 * discount);
+            int predictiveLabel = (int) (100 * predictive);
+            StringBuilder nameBuilder = new StringBuilder();
+            nameBuilder.append(files[g * 2].getPath().substring(0, files[g * 2].getPath().indexOf("activity_")));
+            nameBuilder.append("n");
+            nameBuilder.append(neighbors);
+            nameBuilder.append("_d");
+            nameBuilder.append(discountLabel);
+            nameBuilder.append("_p");
+            nameBuilder.append(predictiveLabel);
+            nameBuilder.append("_");
+            String fileBase = nameBuilder.toString();
+            System.out.println(fileBase);
             int fileNum = 0;
             boolean lastFound = false;
             while(!lastFound)
@@ -152,8 +167,9 @@ public class Main
                 File file = new File(builder.toString());
                 lastFound = !file.exists();
             }
+
             GameToFeatureList gameToFeatures = new GameToFeatureList(games.get(g));
-            List<Feature> gameFeatures = gameToFeatures.generateRawFeatureList();
+            List<Feature> gameFeatures = gameToFeatures.generateFeatureList(neighbors, discount, predictive);
             StringBuilder builder = new StringBuilder();
             builder.append(fileBase);
             builder.append(fileNum);

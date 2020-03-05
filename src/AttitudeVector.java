@@ -16,12 +16,12 @@ public class AttitudeVector
         vector[3] = otherAttitudeVector.vector[3];
     }
 
-    public AttitudeVector(double cooperate, double greedy, double placate, double absurd)
+    public AttitudeVector(double greedy, double placate, double cooperate, double absurd)
     {
         vector = new double[4];
-        vector[0] = cooperate;
-        vector[1] = greedy;
-        vector[2] = placate;
+        vector[0] = greedy;
+        vector[1] = placate;
+        vector[2] = cooperate;
         vector[3] = absurd;
         normalize();
     }
