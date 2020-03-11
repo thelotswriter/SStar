@@ -1,3 +1,7 @@
+package Features;
+
+import Attitudes.AttitudeVector;
+
 public class Feature
 {
 

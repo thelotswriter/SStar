@@ -1,14 +1,14 @@
-import Attitudes.Attitude;
+package Features;
+
+import Attitudes.AttitudeVector;
+import Features.Feature;
 import Game.Game;
 import Game.PayoffMatrix;
 import Game.SpeechAct;
 import Game.Player;
 
-import javax.swing.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Spliterator;
 
 public class GameToFeatureList
 {
@@ -119,7 +119,7 @@ public class GameToFeatureList
     /**
      * Creates a list of features to demonstrate the row player's
      * environment, actions, and message3s
-     * @return List of Feature objects representing the row player's environment and reactions
+     * @return List of Features.Feature objects representing the row player's environment and reactions
      */
     public List<Feature> generateRawFeatureList()
     {
@@ -129,7 +129,7 @@ public class GameToFeatureList
 //            System.out.println(round);
             Feature feature = new Feature();
             int[] actionPair = game.getActionPair(round);
-//            AttitudeVector attitudeDisplayed = new AttitudeVector(aMatrix[actionPair[0]][actionPair[1]]);
+//            Attitudes.AttitudeVector attitudeDisplayed = new Attitudes.AttitudeVector(aMatrix[actionPair[0]][actionPair[1]]);
 //            feature.setAttitudeDisplayed(attitudeDisplayed);
             AttitudeVector attitudeDisplayed = new AttitudeVector(aMatrix[actionPair[0]][actionPair[1]]);
             feature.setAttitudeDisplayed(attitudeDisplayed);
@@ -377,7 +377,7 @@ public class GameToFeatureList
         }
 
     /**
-    * Generates the AttitudeVector matrix corresponding with the game
+    * Generates the Attitudes.AttitudeVector matrix corresponding with the game
     * @param pMatrix The payoff matrix
     * @param highestPayoff The highest possible payoff for the row player
     * @param highestOtherPayoff The highest payoff for the column player

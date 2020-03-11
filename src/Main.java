@@ -1,21 +1,16 @@
-import Attitudes.*;
 import Automata.GameToAutomata;
-import Exceptions.NotEnoughOptionsException;
-import Game.CSVtoGame;
+import Features.Feature;
+import Features.GameToFeatureList;
 import Game.Game;
 import Game.TXTtoGame;
-import StrategyTables.GameToTable;
-import StrategyTables.GeneralizeStrategy;
 import StrategyTables.StrategyTable;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class Main
@@ -117,7 +112,7 @@ public class Main
 //            }
 //            Collection<StrategyTable> learnedStrategies = null;
 //            try {
-//                learnedStrategies = AttitudeStrategyLearner.getInstance().learnStrategies(3, generalizedStrategies, 100);
+//                learnedStrategies = Attitudes.AttitudeStrategyLearner.getInstance().learnStrategies(3, generalizedStrategies, 100);
 //                System.out.println("==========================================================");
 //                System.out.println("=================LEARNED STRATEGIES=======================");
 //                System.out.println("==========================================================");
@@ -224,7 +219,7 @@ public class Main
         for(Game game : games)
         {
 //            GameToRawFeatureList gameToFeatures = new GameToRawFeatureList(game);
-//            List<Feature> gameFeatures = gameToFeatures.generatePlayer1FeatureList();
+//            List<Features.Feature> gameFeatures = gameToFeatures.generatePlayer1FeatureList();
 //            StringBuilder builder = new StringBuilder();
 //            builder.append("FeatureData");
 //            builder.append(fileNum);

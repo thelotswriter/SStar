@@ -1,3 +1,5 @@
+package Attitudes;
+
 import Exceptions.NotEnoughOptionsException;
 import StrategyTables.StrategyTable;
 

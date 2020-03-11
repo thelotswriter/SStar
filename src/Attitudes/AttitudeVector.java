@@ -1,3 +1,5 @@
+package Attitudes;
+
 public class AttitudeVector
 {
     private double[] vector;
