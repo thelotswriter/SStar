@@ -103,4 +103,14 @@ public class AttitudeVector
         }
     }
 
+    public double distanceFrom(AttitudeVector otherAttitudeVector)
+    {
+        double workingDist = 0;
+        workingDist += (vector[0] - otherAttitudeVector.vector[0]) * (vector[0] - otherAttitudeVector.vector[0]);
+        workingDist += (vector[1] - otherAttitudeVector.vector[1]) * (vector[1] - otherAttitudeVector.vector[1]);
+        workingDist += (vector[2] - otherAttitudeVector.vector[2]) * (vector[2] - otherAttitudeVector.vector[2]);
+        workingDist += (vector[3] - otherAttitudeVector.vector[3]) * (vector[3] - otherAttitudeVector.vector[3]);
+        return Math.sqrt(workingDist);
+    }
+
 }

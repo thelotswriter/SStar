@@ -278,8 +278,11 @@ public class GameToFeatureList
                 prevOtherMessage = actsOtherSuggested;
             }
             double[] jointAttitudesSaid = combineMessages(actsSuggested);
+            double[] jointAttitudesOtherSaid = combineMessages(actsOtherSuggested);
             feature.setAttitudeSaid(new AttitudeVector(jointAttitudesSaid[0], jointAttitudesSaid[1],
                     jointAttitudesSaid[2], jointAttitudesSaid[3]));
+            feature.setOtherAttitudeSaid(new AttitudeVector(jointAttitudesOtherSaid[0], jointAttitudesOtherSaid[1],
+                    jointAttitudesOtherSaid[2], jointAttitudesOtherSaid[3]));
             prevIntegrity = calculateIntegrity(prevIntegrity, prevAction, prevMessage, actPair[0], messageDiscounts[round] == 1);
             prevDeference = calculateDeference(prevDeference, prevAction, prevOtherMessage, actPair[0], otherMessageDiscounts[round] == 1);
             feature.setIntegrity(prevIntegrity);
