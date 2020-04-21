@@ -121,7 +121,7 @@ public class GameToFeatureList
      * environment, actions, and message3s
      * @return List of Features.Feature objects representing the row player's environment and reactions
      */
-    public List<Feature> generateRawFeatureList()
+    public FeatureList generateRawFeatureList()
     {
         List<Feature> featureList = new ArrayList<>();
         for(int round = 0; round < game.getNumRounds(); round++)
@@ -235,7 +235,7 @@ public class GameToFeatureList
             }
             featureList.add(feature);
         }
-        return featureList;
+        return new FeatureList(featureList);
     }
 
     /**
