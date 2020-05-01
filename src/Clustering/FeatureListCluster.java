@@ -13,13 +13,15 @@ public class FeatureListCluster
     private Set<FeatureList> fLists;
     private FeatureList centroid;
     private boolean needsRecalculation;
+    private double threshold;
 
-    public FeatureListCluster(FeatureList featureList)
+    public FeatureListCluster(FeatureList featureList, double closenessThreshold)
     {
         fLists = new HashSet<>();
         fLists.add(featureList);
         centroid = featureList;
         needsRecalculation = false;
+        threshold = closenessThreshold;
     }
 
     public boolean add(FeatureList newFeatureList)
@@ -61,7 +63,7 @@ public class FeatureListCluster
                 {
                     if (featureList != otherFeatureList)
                     {
-                        totalShared += featureList.getNumMatches(otherFeatureList);
+                        totalShared += featureList.getNumMatches(threshold, otherFeatureList);
                     }
                 }
                 if(totalShared > maxTotalShared)
