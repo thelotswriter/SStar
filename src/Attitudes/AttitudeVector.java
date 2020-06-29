@@ -1,6 +1,10 @@
 package Attitudes;
 
-public class AttitudeVector
+import Clustering.DistantDatum;
+
+import java.util.Collection;
+
+public class AttitudeVector implements DistantDatum
 {
     private double[] vector;
 
@@ -111,6 +115,30 @@ public class AttitudeVector
         workingDist += (vector[2] - otherAttitudeVector.vector[2]) * (vector[2] - otherAttitudeVector.vector[2]);
         workingDist += (vector[3] - otherAttitudeVector.vector[3]) * (vector[3] - otherAttitudeVector.vector[3]);
         return Math.sqrt(workingDist);
+    }
+
+    public double getDistance(DistantDatum otherDatum)
+    {
+        if(otherDatum instanceof AttitudeVector)
+        {
+            return distanceFrom((AttitudeVector) otherDatum);
+        } else
+        {
+            return Double.MAX_VALUE;
+        }
+    }
+
+    public static AttitudeVector average(Collection<AttitudeVector> attitudeVectors)
+    {
+        double[] attitudes = new double[4];
+        for(AttitudeVector attitudeVector : attitudeVectors)
+        {
+            attitudes[0] += attitudeVector.vector[0];
+            attitudes[1] += attitudeVector.vector[1];
+            attitudes[2] += attitudeVector.vector[2];
+            attitudes[3] += attitudeVector.vector[3];
+        }
+        return new AttitudeVector(attitudes[0], attitudes[1], attitudes[2], attitudes[3]);
     }
 
 }

@@ -1,4 +1,6 @@
+import Attitudes.AttitudeVector;
 import Automata.GameToAutomata;
+import Clustering.*;
 import Features.Feature;
 import Features.GameToFeatureList;
 import Game.Game;
@@ -11,6 +13,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class Main
@@ -34,16 +38,22 @@ public class Main
             ArrayList<Game> games = new ArrayList<>();
             for(int f = 0; f < files.length / 2; f++)
             {
+                System.out.println(f);
+//                if(f == 24)
+//                {
+//                    System.out.println(f);
+//                }
                 TXTtoGame txtToGame = new TXTtoGame();
                 games.add(txtToGame.openFile(files[f * 2].getPath(), files[f * 2 + 1].getPath()));
             }
+            clusterFeaturesAndAttitudeVectors(files, games);
 //            for(File file : files)
 //            {
 //                TXTtoGame txtToGame = new TXTtoGame();
 //                games.add(txtToGame.openFile())
 ////                games.add(TXTtoGame.getInstance().openFile(file.getPath()));
 //            }
-            graphFeatures(files, games);
+//            graphFeatures(files, games);
 
 //            games.get(0).getPayoffMatrix().print();
 //            System.out.println("=============================");
@@ -127,6 +137,130 @@ public class Main
 //            }
 
         }
+    }
+
+    private static void clusterFeaturesAndAttitudeVectors(File[] files, ArrayList<Game> games)
+    {
+        Collection<Collection<Feature>> featureCollection = new ArrayList<>();
+        for(int g = 0; g < games.size(); g++)
+        {
+            System.out.println(g);
+            GameToFeatureList gameToFeatureList = new GameToFeatureList(games.get(g));
+            Collection<Feature> fCollection = gameToFeatureList.generateFeatureList(5, 0.9, 0.5);
+            featureCollection.add(fCollection);
+        }
+        FeaturesToFeatureClusters featuresToFeatureClusters = FeaturesToFeatureClusters.getInstance();
+        int numFeatureClusters = 10;
+        int numAVClusters = 10;
+        DistantDataCluster[] featureClusters = featuresToFeatureClusters.getFeatureCluster(numFeatureClusters, featureCollection);
+        FeaturesToAttitudeVectorClusters featuresToAttitudeVectorClusters = FeaturesToAttitudeVectorClusters.getInstance();
+        DistantDataCluster[] attitudeVectorClusters = featuresToAttitudeVectorClusters.getAttitudeVectorCluster(numAVClusters, featureCollection);
+        Game game = games.get(0);
+        GameToFeatureList gameToFeatureList = new GameToFeatureList(game);
+        List<Feature> featureList = gameToFeatureList.generateFeatureList(5, 0.9, 0.5);;
+        FeatureListToFeatureClusterList fl2fcl = FeatureListToFeatureClusterList.getInstance();
+        FeatureListToAttitudeVectorClusterList fl2avcl = FeatureListToAttitudeVectorClusterList.getInstance();
+        int[] featureClusterList = fl2fcl.getClusterIndexList(featureList, featureClusters);
+        int[][] attitudeVectorClusterList = fl2avcl.getClusterIndexList(featureList, attitudeVectorClusters);
+        StringBuilder nameBuilder = new StringBuilder();
+        nameBuilder.append(files[0].getPath().substring(0, files[0].getPath().indexOf("activity_")));
+        nameBuilder.append("kf_");
+        nameBuilder.append(numFeatureClusters);
+        nameBuilder.append("kav_");
+        nameBuilder.append(numAVClusters);
+        nameBuilder.append(".csv");
+        try(FileWriter fWriter = new FileWriter(nameBuilder.toString()))
+        {
+            fWriter.append("Feature Cluster representatives");
+            fWriter.append('\n');
+            for(int f = 0; f < featureClusters.length; f++)
+            {
+                Feature centroid = (Feature) featureClusters[f].getCentroid();
+                StringBuilder builder = new StringBuilder();
+                builder.append(f);
+                builder.append(",(");
+                builder.append(centroid.getAttitudeDisplayed().getGreedy());
+                builder.append(" ");
+                builder.append(centroid.getAttitudeDisplayed().getPlacate());
+                builder.append(" ");
+                builder.append(centroid.getAttitudeDisplayed().getCooperate());
+                builder.append(" ");
+                builder.append(centroid.getAttitudeDisplayed().getAbsurd());
+                builder.append("),(");
+                builder.append(centroid.getAttitudeSaid().getGreedy());
+                builder.append(" ");
+                builder.append(centroid.getAttitudeSaid().getPlacate());
+                builder.append(" ");
+                builder.append(centroid.getAttitudeSaid().getCooperate());
+                builder.append(" ");
+                builder.append(centroid.getAttitudeSaid().getAbsurd());
+                builder.append("),(");
+                builder.append(centroid.getOtherAttitudeDisplayed().getGreedy());
+                builder.append(" ");
+                builder.append(centroid.getOtherAttitudeDisplayed().getPlacate());
+                builder.append(" ");
+                builder.append(centroid.getOtherAttitudeDisplayed().getCooperate());
+                builder.append(" ");
+                builder.append(centroid.getOtherAttitudeDisplayed().getAbsurd());
+                builder.append("),(");
+                builder.append(centroid.getOtherAttitudeSaid().getGreedy());
+                builder.append(" ");
+                builder.append(centroid.getOtherAttitudeSaid().getPlacate());
+                builder.append(" ");
+                builder.append(centroid.getOtherAttitudeSaid().getCooperate());
+                builder.append(" ");
+                builder.append(centroid.getOtherAttitudeSaid().getAbsurd());
+                builder.append(")");
+                fWriter.append(builder.toString());
+                fWriter.append('\n');
+            }
+            fWriter.append('\n');
+            for(int fcl = 0; fcl < featureClusterList.length; fcl++)
+            {
+                fWriter.append(String.valueOf(featureClusterList[fcl]));
+                fWriter.append('\n');
+            }
+            fWriter.append('\n');
+            fWriter.append("Attitude Vector Cluster representatives");
+            fWriter.append('\n');
+            for(int av = 0; av < attitudeVectorClusters.length; av++)
+            {
+                AttitudeVector centroid = (AttitudeVector) attitudeVectorClusters[av].getCentroid();
+                StringBuilder builder = new StringBuilder();
+                builder.append(av);
+                builder.append(",(");
+                builder.append(centroid.getGreedy());
+                builder.append(" ");
+                builder.append(centroid.getPlacate());
+                builder.append(" ");
+                builder.append(centroid.getCooperate());
+                builder.append(" ");
+                builder.append(centroid.getAbsurd());
+                builder.append(")");
+                fWriter.append(builder.toString());
+                fWriter.append('\n');
+            }
+            fWriter.append('\n');
+            for(int avcl = 0; avcl < attitudeVectorClusterList.length; avcl++)
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.append("(");
+                builder.append(attitudeVectorClusterList[avcl][0]);
+                builder.append(" ");
+                builder.append(attitudeVectorClusterList[avcl][1]);
+                builder.append(" ");
+                builder.append(attitudeVectorClusterList[avcl][2]);
+                builder.append(" ");
+                builder.append(attitudeVectorClusterList[avcl][3]);
+                builder.append(")");
+                fWriter.append(builder.toString());
+                fWriter.append('\n');
+            }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        System.out.println("Done");
     }
 
     private static void graphFeatures(File[] files, ArrayList<Game> games)

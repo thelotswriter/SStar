@@ -65,7 +65,7 @@ public class TXTtoGame
             String line;
             while ((line = buffy.readLine()) != null)
             {
-                if(!line.contains("$"))
+                if(!line.contains("$") || line == null)
                 {
                     break;
                 }
@@ -75,6 +75,7 @@ public class TXTtoGame
                 if(line == null || !line.contains("$"))
                 {
                     return null;
+//                    break;
                 }
                 cells[1] = line;
                 data.add(cells);
@@ -176,30 +177,30 @@ public class TXTtoGame
                     matrix[1][0][0] = 0.7;
                     matrix[1][0][1] = 0.35;
                 }
-                if(!checkedMatrix[0][2])
-                {
-                    matrix[0][2][0] = 1;
-                    matrix[0][2][1] = 0.4;
-                    matrix[2][0][0] = 0.4;
-                    matrix[2][0][1] = 1;
-                }
+//                if(!checkedMatrix[0][2])
+//                {
+//                    matrix[0][2][0] = 1;
+//                    matrix[0][2][1] = 0.4;
+//                    matrix[2][0][0] = 0.4;
+//                    matrix[2][0][1] = 1;
+//                }
                 if(!checkedMatrix[1][1])
                 {
                     matrix[1][1][0] = 0.1;
                     matrix[1][1][1] = 0.1;
                 }
-                if(!checkedMatrix[1][2])
-                {
-                    matrix[1][2][0] = 0.45;
-                    matrix[1][2][1] = 0.3;
-                    matrix[2][1][0] = 0.3;
-                    matrix[2][1][1] = 0.45;
-                }
-                if(!checkedMatrix[2][2])
-                {
-                    matrix[2][2][0] = 0.4;
-                    matrix[2][2][1] = 0.4;
-                }
+//                if(!checkedMatrix[1][2])
+//                {
+//                    matrix[1][2][0] = 0.45;
+//                    matrix[1][2][1] = 0.3;
+//                    matrix[2][1][0] = 0.3;
+//                    matrix[2][1][1] = 0.45;
+//                }
+//                if(!checkedMatrix[2][2])
+//                {
+//                    matrix[2][2][0] = 0.4;
+//                    matrix[2][2][1] = 0.4;
+//                }
             }
             else
             {

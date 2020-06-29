@@ -253,8 +253,8 @@ public class GameToFeatureList
         double[] messageDiscounts = generateMessageDiscounts(messagesSaid, discount);
         double[] otherMessageDiscounts = generateMessageDiscounts(messagesOtherSaid, discount);
         //***********REVISED VERSION START***************
-        double prevIntegrity = 0;
-        double prevDeference = 0;
+//        double prevIntegrity = 0;
+//        double prevDeference = 0;
         List<int[]> prevMessage = new ArrayList<>();
         int[] prevAction = null;
         List<int[]> prevOtherMessage = new ArrayList<>();
@@ -283,40 +283,40 @@ public class GameToFeatureList
                     jointAttitudesSaid[2], jointAttitudesSaid[3]));
             feature.setOtherAttitudeSaid(new AttitudeVector(jointAttitudesOtherSaid[0], jointAttitudesOtherSaid[1],
                     jointAttitudesOtherSaid[2], jointAttitudesOtherSaid[3]));
-            prevIntegrity = calculateIntegrity(prevIntegrity, prevAction, prevMessage, actPair[0], messageDiscounts[round] == 1);
-            prevDeference = calculateDeference(prevDeference, prevAction, prevOtherMessage, actPair[0], otherMessageDiscounts[round] == 1);
-            feature.setIntegrity(prevIntegrity);
-            feature.setDeference(prevDeference);
+//            prevIntegrity = calculateIntegrity(prevIntegrity, prevAction, prevMessage, actPair[0], messageDiscounts[round] == 1);
+//            prevDeference = calculateDeference(prevDeference, prevAction, prevOtherMessage, actPair[0], otherMessageDiscounts[round] == 1);
+//            feature.setIntegrity(prevIntegrity);
+//            feature.setDeference(prevDeference);
             // Determine Attitude Vector of both players
-            if(prevIntegrity > 0 && prevDeference > 0)
-            {
-                double[] integrityAttitude = calculatePositiveIntegrity(actPair, prevMessage);
-                double[] deferenceAttitude = calculatePositiveDeference(actPair, prevMessage);
-                double[] combinedAttitude = combineAttitudeArrays(integrityAttitude, deferenceAttitude, 0.5);
-                attitudeDisplayed.add(combinedAttitude);
-                aDNeedsAveraging.add(false);
-            } else if(prevIntegrity > 0)
-            {
-                attitudeDisplayed.add(calculatePositiveIntegrity(actPair, prevMessage));
-                aDNeedsAveraging.add(false);
-            } else if(prevDeference > 0)
-            {
-                attitudeDisplayed.add(calculatePositiveDeference(actPair, prevOtherMessage));
-                aDNeedsAveraging.add(false);
-            } else if(prevIntegrity < 0 && prevDeference == 0)
-            {
-                attitudeDisplayed.add(calculateNegativeIntegrity(actPair, prevMessage));
-                aDNeedsAveraging.add(false);
-            } else if(prevIntegrity == 0 && prevDeference < 0)
-            {
-                attitudeDisplayed.add(calculateNegativeDeference(actPair, prevMessage));
-                aDNeedsAveraging.add(false);
-            } else
-            {
-                attitudeDisplayed.add(combineAttitudeArrays(generateAttitudeArray(actPair[0], actPair[1]),
+//            if(prevIntegrity > 0 && prevDeference > 0)
+//            {
+//                double[] integrityAttitude = calculatePositiveIntegrity(actPair, prevMessage);
+//                double[] deferenceAttitude = calculatePositiveDeference(actPair, prevMessage);
+//                double[] combinedAttitude = combineAttitudeArrays(integrityAttitude, deferenceAttitude, 0.5);
+//                attitudeDisplayed.add(combinedAttitude);
+//                aDNeedsAveraging.add(false);
+//            } else if(prevIntegrity > 0)
+//            {
+//                attitudeDisplayed.add(calculatePositiveIntegrity(actPair, prevMessage));
+//                aDNeedsAveraging.add(false);
+//            } else if(prevDeference > 0)
+//            {
+//                attitudeDisplayed.add(calculatePositiveDeference(actPair, prevOtherMessage));
+//                aDNeedsAveraging.add(false);
+//            } else if(prevIntegrity < 0 && prevDeference == 0)
+//            {
+//                attitudeDisplayed.add(calculateNegativeIntegrity(actPair, prevMessage));
+//                aDNeedsAveraging.add(false);
+//            } else if(prevIntegrity == 0 && prevDeference < 0)
+//            {
+//                attitudeDisplayed.add(calculateNegativeDeference(actPair, prevMessage));
+//                aDNeedsAveraging.add(false);
+//            } else
+//            {
+            attitudeDisplayed.add(combineAttitudeArrays(generateAttitudeArray(actPair[0], actPair[1]),
                     generateAverageAttitude(actPair[0]), predictivePower));
-                aDNeedsAveraging.add(true);
-            }
+            aDNeedsAveraging.add(true);
+//            }
             attitudeOtherDisplayed.add(combineAttitudeArrays(generateAttitudeArray(actPair[1], actPair[0]),
                     generateAverageAttitude(actPair[1]), predictivePower));
             featureList.add(feature);

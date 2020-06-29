@@ -1,8 +1,10 @@
 package Features;
 
 import Attitudes.AttitudeVector;
+import Clustering.DistantDatum;
+import StrategyAutomata.GeneralState;
 
-public class Feature
+public class Feature implements DistantDatum, GeneralState
 {
 
     private AttitudeVector attitudeDisplayed;
@@ -114,4 +116,33 @@ public class Feature
         return distances;
     }
 
+    @Override
+    public double getDistance(DistantDatum otherDatum)
+    {
+        if(otherDatum instanceof Feature)
+        {
+            double[] dists = measureDistances((Feature) otherDatum);
+            return Math.sqrt((dists[0] * dists[0]) + (dists[1] * dists[1]) +
+                    (dists[2] * dists[2]) + (dists[3] * dists[3]));
+        } else
+        {
+            return Double.MAX_VALUE;
+        }
+    }
+
+    public boolean equals(Object otherObject)
+    {
+        if(otherObject instanceof Feature)
+        {
+            Feature otherFeature = (Feature) otherObject;
+            if((attitudeDisplayed.distanceFrom(otherFeature.getAttitudeDisplayed()) == 0) &&
+                    (attitudeSaid.distanceFrom(otherFeature.getAttitudeSaid()) == 0) &&
+                    (otherAttitudeDisplayed.distanceFrom(otherFeature.getOtherAttitudeDisplayed()) == 0) &&
+                    (otherAttitudeSaid.distanceFrom(otherFeature.getOtherAttitudeSaid()) == 0))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
