@@ -47,8 +47,9 @@ public class FeaturesToAttitudeVectorClusters
             avCollection.add(f.getOtherAttitudeDisplayed());
             avCollection.add(f.getOtherAttitudeSaid());
         }
-        kMeansDistant kMeans = new kMeansDistant(nClusters, avCollection);
-        return kMeans.calculateClusters();
+//        kMeansDistant kMeans = new kMeansDistant(nClusters, avCollection);
+        kMeansDistantSilhouette kMeansSilhouette = kMeansDistantSilhouette.getInstance();
+        return kMeansSilhouette.doBestKMeans(2,nClusters,avCollection);
     }
 
 }

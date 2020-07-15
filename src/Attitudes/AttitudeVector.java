@@ -141,4 +141,19 @@ public class AttitudeVector implements DistantDatum
         return new AttitudeVector(attitudes[0], attitudes[1], attitudes[2], attitudes[3]);
     }
 
+    public boolean equals(Object o)
+    {
+        if(o == null)
+        {
+            return false;
+        } else if(o instanceof AttitudeVector)
+        {
+            AttitudeVector otherAV = (AttitudeVector) o;
+            return distanceFrom(otherAV) == 0.0;
+        } else
+        {
+            return false;
+        }
+    }
+
 }

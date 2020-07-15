@@ -1,12 +1,13 @@
 package Clustering;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 public class DistantDataCluster
 {
 
-    private Set<DistantDatum> dataCluster;
+    private Collection<DistantDatum> dataCluster;
     private DistantDatum centroid;
     private boolean recalculate;
 
@@ -37,6 +38,11 @@ public class DistantDataCluster
     public DistantDatum getCentroid()
     {
         return centroid;
+    }
+
+    public Collection<DistantDatum> getData()
+    {
+        return dataCluster;
     }
 
     public void calculateCentroid() {

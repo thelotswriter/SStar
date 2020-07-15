@@ -289,7 +289,8 @@ public class GeneralAutomaton
         public String toString() {
             StringBuilder b = new StringBuilder();
             b.append(priorStates[0].toString());
-            for (int m = 1; m < priorStates.length; m++) {
+            for (int m = 1; m < priorStates.length; m++)
+            {
                 b.append(',');
                 b.append(priorStates[m].toString());
             }

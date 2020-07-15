@@ -19,6 +19,13 @@ public class kMeansDistant
         clusters = new DistantDataCluster[k];
         ddLists = new ArrayList<>();
         ddLists.addAll(distantData);
+        for(DistantDatum datum : ddLists)
+        {
+            if(datum == null)
+            {
+                System.out.println("This datum null");
+            }
+        }
         kMeansDone = false;
     }
 
@@ -34,12 +41,10 @@ public class kMeansDistant
 
     private void doKMeans()
     {
-        int[] initialCentroidIndicess = generateCentroids();
-        DistantDatum[] centroids = new DistantDatum[clusters.length];
-        for(int i = 0; i < initialCentroidIndicess.length; i++)
+        DistantDatum[] centroids = generateCentroids();
+        for(int c = 0; c < clusters.length; c++)
         {
-            centroids[i] = ddLists.get(initialCentroidIndicess[i]);
-            clusters[i] = new DistantDataCluster(centroids[i]);
+            clusters[c] = new DistantDataCluster(centroids[c]);
         }
         for(DistantDatum dd : ddLists)
         {
@@ -58,6 +63,14 @@ public class kMeansDistant
                 double bestDistance = Double.MAX_VALUE;
                 for(DistantDataCluster cluster : clusters)
                 {
+                    if(cluster == null)
+                    {
+                        System.out.println("NULL CLUSTER");
+                    }
+                    if(dd == null)
+                    {
+                        System.out.println("NULL DD");
+                    }
                     double distance = cluster.getCentroid().getDistance(dd);
                     if(bestDistance > distance)
                     {
@@ -137,31 +150,75 @@ public class kMeansDistant
         }
     }
 
-    private int[] generateCentroids()
+    private DistantDatum[] generateCentroids()
     {
-        int[] randChoices = new int[clusters.length];
+        DistantDatum[] centroids = new DistantDatum[clusters.length];
         Random rand = new Random();
-        for(int i = 0; i < randChoices.length; i++)
+        for(int i = 0; i < centroids.length; i++)
         {
-            int rInt = rand.nextInt(ddLists.size());
-            boolean duplicate = false;
-            for(int j = 0; j < i; j++)
+            while (centroids[i] == null)
             {
-                if(rInt == randChoices[j])
+                centroids[i] = ddLists.get(rand.nextInt(ddLists.size()));
+                boolean add = true;
+                for(int j = 0; j < i; j++)
                 {
-                    duplicate = true;
-                    break;
+                    if(centroids[j].equals(centroids[i]))
+                    {
+                        add = false;
+                    }
+                }
+                if(!add)
+                {
+                    centroids[i] = null;
                 }
             }
-            if(!duplicate)
-            {
-                randChoices[i] = rInt;
-            } else
-            {
-                i--;
-            }
         }
-        return randChoices;
+        return centroids;
+//        DistantDatum[] randChoices = new DistantDatum[clusters.length];
+//        Random rand = new Random();
+//        for(int i = 0; i < randChoices.length; i++)
+//        {
+//            int rInt = rand.nextInt(ddLists.size());
+//            DistantDatum randChoice = ddLists.get(rInt);
+//            if(randChoice == null)
+//            {
+//                System.out.println("NULL RANDCHOICE");
+//            } else
+//            {
+//                System.out.println("NOT NULL RANDCHOICE");
+//            }
+//            boolean duplicate = false;
+//            for(int j = 0; j < i; j++)
+//            {
+//                if(randChoice.equals(randChoices[j]))
+//                {
+//                    duplicate = true;
+//                    break;
+//                }
+//            }
+//            if(!duplicate)
+//            {
+//                randChoices[i] = randChoice;
+//                System.out.print("RANDCHOICE ADDED ");
+//                System.out.println(i);
+//                if(randChoices[i] == null)
+//                {
+//                    System.out.println("THIS IS NULL");
+//                } else
+//                {
+//                    System.out.println("THIS IS NOT NULL");
+//                }
+//            } else
+//            {
+//                i--;
+//            }
+//        }
+//        for(int rc = 0; rc < randChoices.length; rc++)
+//        {
+//            System.out.print("NULL: ");
+//            System.out.println(rc);
+//        }
+//        return randChoices;
     }
 
     private class ddTransferNode
