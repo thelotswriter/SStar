@@ -1,3 +1,4 @@
+import Attitudes.ActionAttitudeConverterTest;
 import Attitudes.Attitude;
 import Attitudes.AttitudeVector;
 import Automata.GameToAutomata;
@@ -75,9 +76,9 @@ public class Main
                         Collection<Feature> fCollection = gameToFeatureList.generateFeatureList(nNeighbors, discount, pPower);
                         featureCollection.add(fCollection);
                     }
-                    int maxDAVClusters = 25;
+                    int maxDAVClusters = 8;
                     int minDAVClusters = 4;
-                    int maxSAVClusters = 15;
+                    int maxSAVClusters = 8;
                     int minSAVClusters = 4;
                     FeatList2DispAttVecClusts featList2DispAttVecClusts = FeatList2DispAttVecClusts.getInstance();
                     FeatList2SaidAttVecClusts featList2SaidAttVecClusts = FeatList2SaidAttVecClusts.getInstance();
@@ -86,6 +87,20 @@ public class Main
                     // ==============END================
                     loaded = true;
                     break;
+                } case 3:
+                {
+                    ClusteredGameStatGatherer cgsg = new ClusteredGameStatGatherer();
+                    cgsg.printResults();
+                    break;
+                } case 4:
+                {
+                    MegaAutomatonTest megaAutomatonTest = new MegaAutomatonTest(0.9);
+                    megaAutomatonTest.run();
+                    break;
+                } case 5:
+                {
+                    ActionAttitudeConverterTest aacTest = new ActionAttitudeConverterTest();
+                    aacTest.run();
                 } default:
                 {
                     System.out.println("Invalid Selection. Try again..");
@@ -149,6 +164,10 @@ public class Main
                     }
                     System.out.print("Total count: ");
                     System.out.println(megaAutomaton.getTotalCount());
+                    System.out.print("Sequences: ");
+                    System.out.println(megaAutomaton.getNumDistinctSequences());
+                    System.out.print("Highest count: ");
+                    System.out.println(megaAutomaton.getHighestCount());
                     break;
                 } default:
                 {

@@ -27,7 +27,7 @@ public class DSGeneralAutomaton
             saidAVs[s] = saidAttitudes[s];
         }
         sequenceLength = memLength + 1; // Add one for "current"
-        tree = new MemoryTree(sequenceLength * 4, displayedAttitudes.length, saidAttitudes.length);
+        tree = new MemoryTree((sequenceLength * 4) - 2, displayedAttitudes.length, saidAttitudes.length);
     }
 
     /**
@@ -52,20 +52,100 @@ public class DSGeneralAutomaton
 
     private void addObservation(int[][] observation)
     {
-        int[] sequence = new int[sequenceLength * 4];
-        for(int s = 0; s < sequenceLength; s++)
+        int[] sequence = new int[sequenceLength * 4 - 2];
+        for(int s = 0; s < sequenceLength - 1; s++)
         {
             sequence[s * 4] = observation[s][0];
             sequence[s * 4 + 1] = observation[s][1];
             sequence[s * 4 + 2] = observation[s][2];
             sequence[s * 4 + 3] = observation[s][3];
         }
+        sequence[sequenceLength * 4 - 4] = observation[sequenceLength - 1][0];
+        sequence[sequenceLength * 4 - 3] = observation[sequenceLength - 1][1];
         tree.addAVSequence(sequence);
+    }
+
+    public int[] getMostProbableActionAndMessage(int[][] clusteredHistory)
+    {
+        int[] mostProbableDispSaid = new int[2];
+        mostProbableDispSaid[0] = -1;
+        mostProbableDispSaid[1] = -1;
+        if(clusteredHistory.length == sequenceLength - 1)
+        {
+            int[] sequence =new int[sequenceLength * 4 - 2];
+            // Populate sequence history
+            for(int i = 0; i < sequenceLength - 1; i++)
+            {
+                sequence[i * 4] = clusteredHistory[i][0];
+                sequence[i * 4 + 1] = clusteredHistory[i][1];
+                sequence[i * 4 + 2] = clusteredHistory[i][2];
+                sequence[i * 4 + 3] = clusteredHistory[i][3];
+            }
+            int highestCount = 0;
+            for(int d = 0; d < dispAVs.length; d++)
+            {
+                for(int s = 0; s < saidAVs.length; s++)
+                {
+                    sequence[sequence.length - 2] = d;
+                    sequence[sequence.length - 1] = s;
+                    int count = tree.getCount(sequence);
+                    if(count > highestCount)
+                    {
+                        highestCount = count;
+                        mostProbableDispSaid[0] = d;
+                        mostProbableDispSaid[1] = s;
+                    }
+                }
+            }
+        }
+        return mostProbableDispSaid;
+    }
+
+    public int getMostProbableAction(int[][] clusteredHistory)
+    {
+        int mostProbableDisp = -1;
+        if(clusteredHistory.length == sequenceLength - 1)
+        {
+            int[] sequence =new int[sequenceLength * 4 - 3];
+            // Populate sequence history
+            for(int i = 0; i < sequenceLength - 1; i++)
+            {
+                sequence[i * 4] = clusteredHistory[i][0];
+                sequence[i * 4 + 1] = clusteredHistory[i][1];
+                sequence[i * 4 + 2] = clusteredHistory[i][2];
+                sequence[i * 4 + 3] = clusteredHistory[i][3];
+            }
+            int highestCount = 0;
+            for(int d = 0; d < dispAVs.length; d++)
+            {
+                for(int s = 0; s < saidAVs.length; s++)
+                {
+                    sequence[sequence.length - 1] = d;
+                    int count = tree.getCount(sequence);
+                    if(count > highestCount)
+                    {
+                        highestCount = count;
+                        mostProbableDisp = d;
+                    }
+                }
+            }
+        }
+        return mostProbableDisp;
     }
 
     public int getTotalCount()
     {
         return tree.totalCounts();
+    }
+
+    public int getHighestCount()
+    {
+        return tree.highestCount();
+    }
+
+    public int getNumDistinctSequences()
+    {
+        return tree.getNumLeaves();
     }
 
     private class MemoryTree
@@ -94,6 +174,7 @@ public class DSGeneralAutomaton
         {
             if(validSequence(avSequence))
             {
+                System.out.println("Invalid Sequence");
                 return false;
             } else
             {
@@ -160,6 +241,16 @@ public class DSGeneralAutomaton
                 }
                 return true;
             }
+        }
+
+        public int highestCount()
+        {
+            return root.highestCount();
+        }
+
+        public int getNumLeaves()
+        {
+            return root.getNumLeaves();
         }
 
         private class MemoryNode
@@ -273,6 +364,18 @@ public class DSGeneralAutomaton
             {
                 if(iterator == path.length)
                 {
+                    if(hasChildren())
+                    {
+                        int totCount = 0;
+                        for(int c = 0; c < children.length; c++)
+                        {
+                            if(children[c] != null)
+                            {
+                                totCount += children[c].getCount(path, iterator);
+                            }
+                        }
+                        return totCount;
+                    }
                     return count;
                 } else
                 {
@@ -317,6 +420,44 @@ public class DSGeneralAutomaton
             public MemoryNode getChild(int index)
             {
                 return children[index];
+            }
+
+            public int highestCount()
+            {
+                if(hasChildren())
+                {
+                    int highestCount = 0;
+                    for(int c = 0; c < children.length; c++)
+                    {
+                        if(children[c] != null)
+                        {
+                            highestCount = Math.max(highestCount, children[c].highestCount());
+                        }
+                    }
+                    return highestCount;
+                } else
+                {
+                    return count;
+                }
+            }
+
+            public int getNumLeaves()
+            {
+                if(hasChildren())
+                {
+                    int nLeaves = 0;
+                    for(int c = 0; c < children.length; c++)
+                    {
+                        if(children[c] != null)
+                        {
+                            nLeaves += children[c].getNumLeaves();
+                        }
+                    }
+                    return nLeaves;
+                } else
+                {
+                    return 1;
+                }
             }
 
         }

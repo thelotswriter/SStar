@@ -82,9 +82,11 @@ public class TXTtoGame
             }
         } catch (FileNotFoundException e)
         {
+            System.err.println(e.getMessage());
             return null;
         } catch (IOException e)
         {
+            System.err.println(e.getMessage());
             return null;
         }
         return data;

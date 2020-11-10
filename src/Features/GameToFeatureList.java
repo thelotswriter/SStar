@@ -1,5 +1,6 @@
 package Features;
 
+import Attitudes.ActionAttitudeConverter;
 import Attitudes.AttitudeVector;
 import Features.Feature;
 import Game.Game;
@@ -14,17 +15,18 @@ public class GameToFeatureList
 {
 
     private Game game;
+    private ActionAttitudeConverter converter;
 
-    private AttitudeVector[][] aMatrix;
-    double highestPayoff;
-    double highestOtherPayoff;
-    double highestCombinedPayoff;
-    double lowestCombinedPayoff;
-
-    double[] greedyCoords;
-    double[] placateCoords;
-    double[] cooperateCoords;
-    double[] absurdCoords;
+//    private AttitudeVector[][] aMatrix;
+//    double highestPayoff;
+//    double highestOtherPayoff;
+//    double highestCombinedPayoff;
+//    double lowestCombinedPayoff;
+//
+//    double[] greedyCoords;
+//    double[] placateCoords;
+//    double[] cooperateCoords;
+//    double[] absurdCoords;
 
     public GameToFeatureList(Game gamePlayed)
     {
@@ -34,86 +36,7 @@ public class GameToFeatureList
     private void init(Game gamePlayed)
     {
         game = gamePlayed;
-        // Determine joint actions corresponding to each attitude
-        PayoffMatrix pMatrix = game.getPayoffMatrix();
-        int rows = pMatrix.getNumRows();
-        int cols = pMatrix.getNumCols();
-        highestPayoff = Double.MIN_VALUE;
-        highestOtherPayoff = Double.MIN_VALUE;
-        highestCombinedPayoff = Double.MIN_VALUE;
-        lowestCombinedPayoff = Double.MAX_VALUE;
-        List<int[]> greedyPairs = new ArrayList<>();
-        List<int[]> placatePairs = new ArrayList<>();
-        List<int[]> cooperatePairs = new ArrayList<>();
-        List<int[]> absurdPairs = new ArrayList<>();
-        for(int r = 0; r < rows; r++)
-        {
-            for(int c = 0; c < cols; c++)
-            {
-                double playerValue = pMatrix.getRowPlayerValue(r, c);
-                double otherValue = pMatrix.getColPlayerValue(r, c);
-                if(playerValue > highestPayoff)
-                {
-                    highestPayoff = playerValue;
-                    greedyPairs.clear();
-                }
-                if(playerValue == highestPayoff)
-                {
-                    int[] g = new int[2];
-                    g[0] = r;
-                    g[1] = c;
-                    greedyPairs.add(g);
-                }
-                if(otherValue > highestOtherPayoff)
-                {
-                    highestOtherPayoff = otherValue;
-                    placatePairs.clear();
-                }
-                if(otherValue == highestOtherPayoff)
-                {
-                    int[] p = new int[2];
-                    p[0] = r;
-                    p[1] = c;
-                    placatePairs.add(p);
-                }
-                if((playerValue + otherValue) > highestCombinedPayoff)
-                {
-                    highestCombinedPayoff = playerValue + otherValue;
-                    cooperatePairs.clear();
-                }
-                if((playerValue + otherValue) == highestCombinedPayoff)
-                {
-                    int[] co = new int[2];
-                    co[0] = r;
-                    co[1] = c;
-                    cooperatePairs.add(co);
-                }
-                if((playerValue + otherValue) < lowestCombinedPayoff)
-                {
-                    lowestCombinedPayoff = playerValue + otherValue;
-                    absurdPairs.clear();
-                }
-                if((playerValue + otherValue) == lowestCombinedPayoff)
-                {
-                    int[] a = new int[2];
-                    a[0] = r;
-                    a[1] = c;
-                    absurdPairs.add(a);
-                }
-            }
-        }
-        // Create a matrix of AttitudeVectors based on attitudes
-        greedyCoords = calculateGreedyCoords(highestPayoff, pMatrix, greedyPairs);
-        placateCoords = calculatePlacateCoords(highestOtherPayoff, pMatrix, placatePairs);
-        cooperateCoords = new double[2];
-        absurdCoords = new double[2];
-        cooperateCoords[0] = highestCombinedPayoff / 2;
-        cooperateCoords[1] = highestCombinedPayoff / 2;
-        absurdCoords[0] = lowestCombinedPayoff / 2;
-        absurdCoords[1] = lowestCombinedPayoff / 2;
-        generateAttitudeMatrix(pMatrix, highestPayoff, highestOtherPayoff,
-                highestCombinedPayoff, lowestCombinedPayoff, greedyCoords, placateCoords, cooperateCoords,
-                absurdCoords);
+        converter = new ActionAttitudeConverter(game.getPayoffMatrix(), 1.0);
     }
 
     /**
@@ -129,9 +52,7 @@ public class GameToFeatureList
 //            System.out.println(round);
             Feature feature = new Feature();
             int[] actionPair = game.getActionPair(round);
-//            Attitudes.AttitudeVector attitudeDisplayed = new Attitudes.AttitudeVector(aMatrix[actionPair[0]][actionPair[1]]);
-//            feature.setAttitudeDisplayed(attitudeDisplayed);
-            AttitudeVector attitudeDisplayed = new AttitudeVector(aMatrix[actionPair[0]][actionPair[1]]);
+            AttitudeVector attitudeDisplayed = converter.getAttitudeVectorFromActionPair(actionPair[0], actionPair[1]); // new AttitudeVector(aMatrix[actionPair[0]][actionPair[1]]);
             feature.setAttitudeDisplayed(attitudeDisplayed);
             SpeechAct[] messages = game.getPlayer1().getMessage(round);
             List<int[]> actsSuggested = effectiveActionsSuggested(game.getNumRowActions(), messages);
@@ -150,7 +71,7 @@ public class GameToFeatureList
                         alignedAction = true;
                         feature.setIntegrity(1);
                     }
-                    AttitudeVector aV = aMatrix[actSuggested[0]][actSuggested[1]];
+                    AttitudeVector aV = converter.getAttitudeVectorFromActionPair(actSuggested[0], actSuggested[1]); // aMatrix[actSuggested[0]][actSuggested[1]];
                     combinedAttitudes[0] += aV.getGreedy();
                     combinedAttitudes[1] += aV.getPlacate();
                     combinedAttitudes[2] += aV.getCooperate();
@@ -189,7 +110,7 @@ public class GameToFeatureList
                 feature.setAttitudeSaid(new AttitudeVector(combinedAttitudes[0],
                         combinedAttitudes[1], combinedAttitudes[2], combinedAttitudes[3]));
             }
-            AttitudeVector otherAttitudeDisplayed = new AttitudeVector(aMatrix[actionPair[1]][actionPair[0]]);
+            AttitudeVector otherAttitudeDisplayed = new AttitudeVector(converter.getAttitudeVectorFromActionPair(actionPair[1], actionPair[0])); //(aMatrix[actionPair[1]][actionPair[0]]);
             feature.setOtherAttitudeDisplayed(otherAttitudeDisplayed);
 //            feature.setIntegrity(0);
             //*********************************
@@ -255,9 +176,9 @@ public class GameToFeatureList
         //***********REVISED VERSION START***************
 //        double prevIntegrity = 0;
 //        double prevDeference = 0;
-        List<int[]> prevMessage = new ArrayList<>();
-        int[] prevAction = null;
-        List<int[]> prevOtherMessage = new ArrayList<>();
+//        List<int[]> prevMessage = new ArrayList<>();
+//        int[] prevAction = null;
+//        List<int[]> prevOtherMessage = new ArrayList<>();
         List<double[]> attitudeDisplayed = new ArrayList<>();
         List<Boolean> aDNeedsAveraging = new ArrayList<>();
         List<double[]> attitudeOtherDisplayed = new ArrayList<>();
@@ -269,13 +190,13 @@ public class GameToFeatureList
             if(messageDiscounts[round] == 1)
             {
                 actsSuggested = sortActionsSuggested(actsSuggested, messagesSaid.get(round));
-                prevMessage = actsSuggested;
+//                prevMessage = actsSuggested;
             }
             List<int[]> actsOtherSuggested = effectiveActionsSuggested(game.getNumRowActions(), messagesOtherSaid.get(round));
             if(otherMessageDiscounts[round] == 1)
             {
                 actsOtherSuggested = sortActionsSuggested(actsOtherSuggested, messagesOtherSaid.get(round));
-                prevOtherMessage = actsOtherSuggested;
+//                prevOtherMessage = actsOtherSuggested;
             }
             double[] jointAttitudesSaid = combineMessages(actsSuggested);
             double[] jointAttitudesOtherSaid = combineMessages(actsOtherSuggested);
@@ -283,36 +204,6 @@ public class GameToFeatureList
                     jointAttitudesSaid[2], jointAttitudesSaid[3]));
             feature.setOtherAttitudeSaid(new AttitudeVector(jointAttitudesOtherSaid[0], jointAttitudesOtherSaid[1],
                     jointAttitudesOtherSaid[2], jointAttitudesOtherSaid[3]));
-//            prevIntegrity = calculateIntegrity(prevIntegrity, prevAction, prevMessage, actPair[0], messageDiscounts[round] == 1);
-//            prevDeference = calculateDeference(prevDeference, prevAction, prevOtherMessage, actPair[0], otherMessageDiscounts[round] == 1);
-//            feature.setIntegrity(prevIntegrity);
-//            feature.setDeference(prevDeference);
-            // Determine Attitude Vector of both players
-//            if(prevIntegrity > 0 && prevDeference > 0)
-//            {
-//                double[] integrityAttitude = calculatePositiveIntegrity(actPair, prevMessage);
-//                double[] deferenceAttitude = calculatePositiveDeference(actPair, prevMessage);
-//                double[] combinedAttitude = combineAttitudeArrays(integrityAttitude, deferenceAttitude, 0.5);
-//                attitudeDisplayed.add(combinedAttitude);
-//                aDNeedsAveraging.add(false);
-//            } else if(prevIntegrity > 0)
-//            {
-//                attitudeDisplayed.add(calculatePositiveIntegrity(actPair, prevMessage));
-//                aDNeedsAveraging.add(false);
-//            } else if(prevDeference > 0)
-//            {
-//                attitudeDisplayed.add(calculatePositiveDeference(actPair, prevOtherMessage));
-//                aDNeedsAveraging.add(false);
-//            } else if(prevIntegrity < 0 && prevDeference == 0)
-//            {
-//                attitudeDisplayed.add(calculateNegativeIntegrity(actPair, prevMessage));
-//                aDNeedsAveraging.add(false);
-//            } else if(prevIntegrity == 0 && prevDeference < 0)
-//            {
-//                attitudeDisplayed.add(calculateNegativeDeference(actPair, prevMessage));
-//                aDNeedsAveraging.add(false);
-//            } else
-//            {
             attitudeDisplayed.add(combineAttitudeArrays(generateAttitudeArray(actPair[0], actPair[1]),
                     generateAverageAttitude(actPair[0]), predictivePower));
             aDNeedsAveraging.add(true);
@@ -320,196 +211,43 @@ public class GameToFeatureList
             attitudeOtherDisplayed.add(combineAttitudeArrays(generateAttitudeArray(actPair[1], actPair[0]),
                     generateAverageAttitude(actPair[1]), predictivePower));
             featureList.add(feature);
-            prevAction = actPair;
+//            prevAction = actPair;
         }
-        List<double[]> unconvertedAttitudesDisplayed
-                = averageAttitudesDisplayed(attitudeDisplayed, generateDiscountArray(neighbors, discount));
-        List<double[]> unconvertedOtherAttitudesDisplayed
-                = averageAttitudesDisplayed(attitudeOtherDisplayed, generateDiscountArray(neighbors, discount));
-        for(int round = 0; round < game.getNumRounds(); round++)
+        AttitudeVector prevAV = null;
+        AttitudeVector prevOtherAV = null;
+        for(int f = 0; f < featureList.size(); f++)
         {
-            if(aDNeedsAveraging.get(round).booleanValue())
+            AttitudeVector oldAV = featureList.get(f).getAttitudeDisplayed();
+            AttitudeVector oldOtherAV = featureList.get(f).getOtherAttitudeDisplayed();
+            if(prevAV != null && prevOtherAV != null)
             {
-                featureList.get(round).setAttitudeDisplayed(convertToAttitudeVector(
-                        unconvertedAttitudesDisplayed.get(round)));
-            } else
-            {
-                featureList.get(round).setAttitudeDisplayed(
-                        convertToAttitudeVector(attitudeDisplayed.get(round)));
+                AttitudeVector newAV = new AttitudeVector(prevAV.getGreedy() + oldAV.getGreedy(), prevAV.getPlacate() + oldAV.getPlacate(),prevAV.getCooperate() + oldAV.getCooperate(), prevAV.getAbsurd() + oldAV.getAbsurd());
+                AttitudeVector newOtherAV = new AttitudeVector(prevOtherAV.getGreedy() + oldOtherAV.getGreedy(), prevOtherAV.getPlacate() + oldOtherAV.getPlacate(), prevOtherAV.getCooperate() + oldOtherAV.getCooperate(), prevOtherAV.getAbsurd() + oldOtherAV.getAbsurd());
+                featureList.get(f).setAttitudeDisplayed(newAV);
+                featureList.get(f).setOtherAttitudeDisplayed(newOtherAV);   
             }
-            featureList.get(round).setOtherAttitudeDisplayed(
-                    convertToAttitudeVector(unconvertedOtherAttitudesDisplayed.get(round)));
+            prevAV = oldAV;
+            prevOtherAV = oldOtherAV;
         }
+//        List<double[]> unconvertedAttitudesDisplayed
+//                = averageAttitudesDisplayed(attitudeDisplayed, generateDiscountArray(neighbors, discount));
+//        List<double[]> unconvertedOtherAttitudesDisplayed
+//                = averageAttitudesDisplayed(attitudeOtherDisplayed, generateDiscountArray(neighbors, discount));
+//        for(int round = 0; round < game.getNumRounds(); round++)
+//        {
+//            if(aDNeedsAveraging.get(round).booleanValue())
+//            {
+//                featureList.get(round).setAttitudeDisplayed(convertToAttitudeVector(
+//                        unconvertedAttitudesDisplayed.get(round)));
+//            } else
+//            {
+//                featureList.get(round).setAttitudeDisplayed(
+//                        convertToAttitudeVector(attitudeDisplayed.get(round)));
+//            }
+//            featureList.get(round).setOtherAttitudeDisplayed(
+//                    convertToAttitudeVector(unconvertedOtherAttitudesDisplayed.get(round)));
+//        }
         return featureList;
-    }
-
-    private double[] calculateGreedyCoords(double highestVal,
-                                           PayoffMatrix payoffMatrix,
-                                           List<int[]> greedyPairs)
-    {
-        double[] pair = new double[2];
-        pair[0] = highestVal;
-        pair[1] = Double.MAX_VALUE;
-        for(int[] greedyPair : greedyPairs)
-        {
-            double otherVal = payoffMatrix.getColPlayerValue(greedyPair[0], greedyPair[1]);
-            if(otherVal < pair[1])
-            {
-                pair[1] = otherVal;
-            }
-        }
-        return pair;
-    }
-
-    private double[] calculatePlacateCoords(double highestOtherVal,
-                                            PayoffMatrix payoffMatrix,
-                                            List<int[]> placatePairs)
-    {
-            double[] pair = new double[2];
-            pair[0] = Double.MAX_VALUE;
-            for(int[] placatePair : placatePairs)
-            {
-                double val = payoffMatrix.getRowPlayerValue(placatePair[0], placatePair[1]);
-                if(val < pair[0])
-                {
-                    pair[0] = val;
-                }
-            }
-            pair[1] = highestOtherVal;
-            return pair;
-        }
-
-    /**
-    * Generates the Attitudes.AttitudeVector matrix corresponding with the game
-    * @param pMatrix The payoff matrix
-    * @param highestPayoff The highest possible payoff for the row player
-    * @param highestOtherPayoff The highest payoff for the column player
-    * @param highestCombinedPayoff The highest payoff when combining the row and column player values
-    * @param lowestCombinedPayoff The lowest payoff when combining the row and column player values
-    * @param greedyCoords Coordinates of the greediest action's payoff
-    * @param placateCoords Coordinates of the most placating action's payoff
-    * @param cooperateCoords Coordinates of the most cooperative value
-    * @param absurdCoords Coordinates of the most absurd values
-    */
-    private void generateAttitudeMatrix(PayoffMatrix pMatrix, double highestPayoff,
-                                                      double highestOtherPayoff, double highestCombinedPayoff,
-                                                      double lowestCombinedPayoff, double[] greedyCoords,
-                                                      double[] placateCoords, double[] cooperateCoords,
-                                                      double[] absurdCoords)
-    {
-        int rows = pMatrix.getNumRows();
-        int cols = pMatrix.getNumCols();
-        aMatrix = new AttitudeVector[rows][cols];
-        for(int r = 0; r < rows; r++)
-        {
-            for(int c = 0; c < cols; c++)
-            {
-                // Determine if the joint action corresponds to any pure attitudes
-                double[] tempAtVec = new double[4];
-                boolean added = false;
-                double value = pMatrix.getRowPlayerValue(r, c);
-                double otherValue = pMatrix.getColPlayerValue(r, c);
-                if(!(value == highestPayoff && otherValue == highestOtherPayoff))
-                {
-                    if(value == highestPayoff)
-                    {
-                        tempAtVec[0] = 1;
-                        added = true;
-                    }
-                    if(otherValue == highestOtherPayoff)
-                    {
-                        tempAtVec[1] = 1;
-                        added = true;
-                    }
-                }
-                if((value + otherValue) == highestCombinedPayoff)
-                {
-                    tempAtVec[2] = 1;
-                    added = true;
-                }
-                if((value + otherValue) == lowestCombinedPayoff)
-                {
-                    tempAtVec[3] = 1;
-                    added = true;
-                }
-                // If no pure attitudes are demonstrated by the joint action,
-                // determine what percent of each attitude is displayed
-                if(!added)
-                {
-                    double distGreedy = highestPayoff - pMatrix.getRowPlayerValue(r, c);
-                    double distPlacate = highestOtherPayoff - pMatrix.getColPlayerValue(r, c);
-
-                    if(distGreedy < distPlacate)
-                    {
-                        double[] intersection = calculateIntersection(greedyCoords[0], greedyCoords[1],
-                                cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
-                                absurdCoords[1], pMatrix.getRowPlayerValue(r, c), pMatrix.getColPlayerValue(r, c));
-                        double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
-                        double absurdValue = pMatrix.getRowPlayerValue(r, c) + pMatrix.getColPlayerValue(r,c)
-                                - lowestCombinedPayoff;
-                        double percentAbsurd = 1.0 - absurdValue / absurdDist;
-                        double greedyDist = highestPayoff - highestCombinedPayoff / 2;
-                        double greedyValue = intersection[0] - highestCombinedPayoff / 2;
-                        double greedyPercent = greedyValue / greedyDist;
-                        tempAtVec[0] = greedyPercent;
-                        tempAtVec[2] = 1.0 - greedyPercent;
-                        tempAtVec[3] = percentAbsurd;
-                    } else if(distGreedy > distPlacate)
-                    {
-                        double[] intersection = calculateIntersection(placateCoords[0], placateCoords[1],
-                                cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
-                                absurdCoords[1], pMatrix.getRowPlayerValue(r, c), pMatrix.getColPlayerValue(r, c));
-                        double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
-                        double absurdValue = pMatrix.getRowPlayerValue(r, c) + pMatrix.getColPlayerValue(r,c)
-                                - lowestCombinedPayoff;
-                        double percentAbsurd = 1.0 - absurdValue / absurdDist;
-                        double placateDist = highestOtherPayoff - highestCombinedPayoff / 2;
-                        double placateValue = intersection[1] - highestCombinedPayoff / 2;
-                        double placatePercent = placateValue / placateDist;
-                        tempAtVec[1] = placatePercent;
-                        tempAtVec[2] = 1.0 - placatePercent;
-                        tempAtVec[3] = percentAbsurd;
-                    } else
-                    {
-                        double combinedDistance = highestCombinedPayoff - lowestCombinedPayoff;
-                        double combinedValue = pMatrix.getRowPlayerValue(r, c)
-                                + pMatrix.getColPlayerValue(r, c) - lowestCombinedPayoff;
-                        double percentCooperative = combinedValue / combinedDistance;
-                        tempAtVec[2] = percentCooperative;
-                        tempAtVec[3] = 1 - percentCooperative;
-                    }
-                }
-                aMatrix[r][c] = new AttitudeVector(tempAtVec[0],
-                        tempAtVec[1], tempAtVec[2], tempAtVec[3]);
-            }
-        }
-    }
-
-    /**
-     * Calculates the intersection of two lines
-     * @param x1 The x coordinate of one point on the first line
-     * @param y1 The y coordinate of one point on the first line
-     * @param x2 The x coordinate of another point on the first line
-     * @param y2 The y coordinate of another point on the first line
-     * @param x3 The x coordinate of one point on the second line
-     * @param y3 The y coordinate of one point on the second line
-     * @param x4 The x coordinate of another point on the second line
-     * @param y4 The y coordinate of another point on the second line
-     * @return The intersection of the two lines defined
-     */
-    private double[] calculateIntersection(double x1, double y1,
-                                           double x2, double y2,
-                                           double x3, double y3,
-                                           double x4, double y4)
-    {
-        double a1 = (y2 - y1) / (x2 - x1);
-        double b1 = y1 - a1 * x1;
-        double a2 = (y4 - y3) / (x4 - x3);
-        double b2 = y3 - a2 * x3;
-        double[] intersect = new double[2];
-        intersect[0] = (b1 - b2) / (a2 - a1);
-        intersect[1] = a1 * intersect[0] + b1;
-        return intersect;
     }
 
     private List<int[]> effectiveActionsSuggested(int numActions, SpeechAct[]  messages)
@@ -777,7 +515,7 @@ public class GameToFeatureList
         double[] combinedMessage = new double[4];
         for(int[] message : messages)
         {
-            AttitudeVector selVec = aMatrix[message[0]][message[1]];
+            AttitudeVector selVec = converter.getAttitudeVectorFromActionPair(message[0], message[1]); // aMatrix[message[0]][message[1]];
             combinedMessage[0] += selVec.getGreedy();
             combinedMessage[1] += selVec.getPlacate();
             combinedMessage[2] += selVec.getCooperate();
@@ -888,10 +626,10 @@ public class GameToFeatureList
         double[] attitudeArray = new double[4];
         for(int act = 0; act < game.getNumRowActions(); act++)
         {
-            attitudeArray[0] += aMatrix[actTaken][act].getGreedy();
-            attitudeArray[1] += aMatrix[actTaken][act].getPlacate();
-            attitudeArray[2] += aMatrix[actTaken][act].getCooperate();
-            attitudeArray[3] += aMatrix[actTaken][act].getAbsurd();
+            attitudeArray[0] += converter.getAttitudeVectorFromActionPair(actTaken, act).getGreedy(); //aMatrix[actTaken][act].getGreedy();
+            attitudeArray[1] += converter.getAttitudeVectorFromActionPair(actTaken, act).getPlacate(); //aMatrix[actTaken][act].getPlacate();
+            attitudeArray[2] += converter.getAttitudeVectorFromActionPair(actTaken, act).getCooperate(); //aMatrix[actTaken][act].getCooperate();
+            attitudeArray[3] += converter.getAttitudeVectorFromActionPair(actTaken, act).getAbsurd(); //aMatrix[actTaken][act].getAbsurd();
         }
         if(attitudeArray[0] > attitudeArray[1])
         {
@@ -916,7 +654,7 @@ public class GameToFeatureList
 
     private double[] generateAttitudeArray(int rowAct, int colAct)
     {
-        AttitudeVector aV = new AttitudeVector(aMatrix[rowAct][colAct]);
+        AttitudeVector aV = new AttitudeVector(converter.getAttitudeVectorFromActionPair(rowAct, colAct)); //(aMatrix[rowAct][colAct]);
         double[] attitudeArray = new double[4];attitudeArray[0] = aV.getGreedy();
         attitudeArray[0] = aV.getGreedy();
         attitudeArray[1] = aV.getPlacate();
@@ -1028,140 +766,140 @@ public class GameToFeatureList
         return convertedList;
     }
 
-    private double[] calculatePositiveIntegrity(int[] prevAction, List<int[]> message)
-    {
-        double[] intendedAttitude = new double[4];
-        if(message.size() > 1)
-        {
-            int[] act1 = message.get(0);
-            int[] act2 = message.get(1);
-            intendedAttitude = mergeActionPairs(act1, act2);
-        } else
-        {
-            int[] act = message.get(0);
-            intendedAttitude[0] = aMatrix[act[0]][act[1]].getGreedy();
-            intendedAttitude[1] = aMatrix[act[0]][act[1]].getPlacate();
-            intendedAttitude[2] = aMatrix[act[0]][act[1]].getCooperate();
-            intendedAttitude[3] = aMatrix[act[0]][act[1]].getAbsurd();
-        }
-        return intendedAttitude;
-    }
-
-    private double[] calculatePositiveDeference(int[] prevAction, List<int[]> message)
-    {
-        double[] intendedAttitude = new double[4];
-        if(message.size() > 1)
-        {
-            int[] act1 = message.get(0);
-            int[] act2 = message.get(1);
-            intendedAttitude = mergeActionPairs(act1, act2);
-        } else
-        {
-            int[] act = message.get(0);
-            intendedAttitude[0] = aMatrix[act[1]][act[0]].getGreedy();
-            intendedAttitude[1] = aMatrix[act[1]][act[0]].getPlacate();
-            intendedAttitude[2] = aMatrix[act[1]][act[0]].getCooperate();
-            intendedAttitude[3] = aMatrix[act[1]][act[0]].getAbsurd();
-        }
-        return intendedAttitude;
-    }
-
-    private double[] calculateNegativeIntegrity(int[] playerAction, List<int[]> message)
-    {
-        int[] intendedActionPair = new int[2];
-        intendedActionPair[0] = playerAction[0];
-        intendedActionPair[1] = message.get(0)[1];
-        double[] intendedAttitude = new double[4];
-        intendedAttitude[0] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getGreedy();
-        intendedAttitude[1] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getPlacate();
-        intendedAttitude[2] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getCooperate();
-        intendedAttitude[3] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getAbsurd();
-        return intendedAttitude;
-    }
-
-    private double[] calculateNegativeDeference(int[] playerAction, List<int[]> message)
-    {
-        int[] intendedActionPair = new int[2];
-        intendedActionPair[0] = playerAction[0];
-        intendedActionPair[1] = message.get(0)[0];
-        double[] intendedAttitude = new double[4];
-        intendedAttitude[0] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getGreedy();
-        intendedAttitude[1] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getPlacate();
-        intendedAttitude[2] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getCooperate();
-        intendedAttitude[3] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getAbsurd();
-        return intendedAttitude;
-    }
+//    private double[] calculatePositiveIntegrity(int[] prevAction, List<int[]> message)
+//    {
+//        double[] intendedAttitude = new double[4];
+//        if(message.size() > 1)
+//        {
+//            int[] act1 = message.get(0);
+//            int[] act2 = message.get(1);
+//            intendedAttitude = mergeActionPairs(act1, act2);
+//        } else
+//        {
+//            int[] act = message.get(0);
+//            intendedAttitude[0] = converter.getAttitudeVectorFromActionPair(act[0][1]).getGreedy(); //aMatrix[act[0]][act[1]].getGreedy();
+//            intendedAttitude[1] = converter.getAttitudeVectorFromActionPair(act[0][1]).getPlacate(); //aMatrix[act[0]][act[1]].getPlacate();
+//            intendedAttitude[2] = converter.getAttitudeVectorFromActionPair(act[0][1]).getCooperate(); //aMatrix[act[0]][act[1]].getCooperate();
+//            intendedAttitude[3] = converter.getAttitudeVectorFromActionPair(act[0][1]).getAbsurd(); //aMatrix[act[0]][act[1]].getAbsurd();
+//        }
+//        return intendedAttitude;
+//    }
+//
+//    private double[] calculatePositiveDeference(int[] prevAction, List<int[]> message)
+//    {
+//        double[] intendedAttitude = new double[4];
+//        if(message.size() > 1)
+//        {
+//            int[] act1 = message.get(0);
+//            int[] act2 = message.get(1);
+//            intendedAttitude = mergeActionPairs(act1, act2);
+//        } else
+//        {
+//            int[] act = message.get(0);
+//            intendedAttitude[0] = converter.getAttitudeVectorFromActionPair(act[1][0]).getGreedy(); //aMatrix[act[1]][act[0]].getGreedy();
+//            intendedAttitude[1] = converter.getAttitudeVectorFromActionPair(act[1][0]).getPlacate(); //aMatrix[act[1]][act[0]].getPlacate();
+//            intendedAttitude[2] = converter.getAttitudeVectorFromActionPair(act[1][0]).getCooperate(); //aMatrix[act[1]][act[0]].getCooperate();
+//            intendedAttitude[3] = converter.getAttitudeVectorFromActionPair(act[1][0]).getAbsurd(); //aMatrix[act[1]][act[0]].getAbsurd();
+//        }
+//        return intendedAttitude;
+//    }
+//
+//    private double[] calculateNegativeIntegrity(int[] playerAction, List<int[]> message)
+//    {
+//        int[] intendedActionPair = new int[2];
+//        intendedActionPair[0] = playerAction[0];
+//        intendedActionPair[1] = message.get(0)[1];
+//        double[] intendedAttitude = new double[4];
+//        intendedAttitude[0] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getGreedy();
+//        intendedAttitude[1] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getPlacate();
+//        intendedAttitude[2] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getCooperate();
+//        intendedAttitude[3] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getAbsurd();
+//        return intendedAttitude;
+//    }
+//
+//    private double[] calculateNegativeDeference(int[] playerAction, List<int[]> message)
+//    {
+//        int[] intendedActionPair = new int[2];
+//        intendedActionPair[0] = playerAction[0];
+//        intendedActionPair[1] = message.get(0)[0];
+//        double[] intendedAttitude = new double[4];
+//        intendedAttitude[0] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getGreedy();
+//        intendedAttitude[1] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getPlacate();
+//        intendedAttitude[2] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getCooperate();
+//        intendedAttitude[3] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getAbsurd();
+//        return intendedAttitude;
+//    }
 
     private AttitudeVector convertToAttitudeVector(double[] unconverted)
     {
         return new AttitudeVector(unconverted[0], unconverted[1], unconverted[2], unconverted[3]);
     }
 
-    private double[] mergeActionPairs(int[] actPair1, int[] actPair2)
-    {
-        double[] mergedAttitude = new double[4];
-        double[] averagedPayoffs = new double[2];
-        averagedPayoffs[0] = (game.getPayoffMatrix().getRowPlayerValue(actPair1[0], actPair1[1]) +
-                game.getPayoffMatrix().getRowPlayerValue(actPair2[0], actPair2[1])) / 2;
-        averagedPayoffs[1] = (game.getPayoffMatrix().getColPlayerValue(actPair1[0], actPair1[1]) +
-                game.getPayoffMatrix().getColPlayerValue(actPair2[0], actPair2[1])) / 2;
-        if(averagedPayoffs[0] + averagedPayoffs[1] >= highestCombinedPayoff)
-        {
-            mergedAttitude[0] = 1;
-        } else if(averagedPayoffs[0] >= highestPayoff)
-        {
-            mergedAttitude[1] = 1;
-        } else if(averagedPayoffs[1] >= highestOtherPayoff)
-        {
-            mergedAttitude[2] = 1;
-        } else if(averagedPayoffs[0] + averagedPayoffs[1] <= lowestCombinedPayoff)
-        {
-            mergedAttitude[3] = 1;
-        } else
-        {
-            double distGreedy = highestPayoff - averagedPayoffs[0];
-            double distPlacate = highestOtherPayoff - averagedPayoffs[1];
-            if(distGreedy > distPlacate)
-            {
-                double[] intersection = calculateIntersection(greedyCoords[0], greedyCoords[1],
-                        cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
-                        absurdCoords[1], averagedPayoffs[0], averagedPayoffs[1]);
-                double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
-                double absurdValue = averagedPayoffs[0] + averagedPayoffs[1]
-                        - lowestCombinedPayoff;
-                double percentAbsurd = 1.0 - absurdValue / absurdDist;
-                double greedyDist = highestPayoff - highestCombinedPayoff / 2;
-                double greedyValue = intersection[0] - highestCombinedPayoff / 2;
-                double greedyPercent = greedyValue / greedyDist;
-                mergedAttitude[0] = greedyPercent;
-                mergedAttitude[2] = 1.0 - greedyPercent;
-                mergedAttitude[3] = percentAbsurd;
-            } else if(distGreedy < distPlacate)
-            {
-                double[] intersection = calculateIntersection(placateCoords[0], placateCoords[1],
-                        cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
-                        absurdCoords[1], averagedPayoffs[0], averagedPayoffs[1]);
-                double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
-                double absurdValue = averagedPayoffs[0] + averagedPayoffs[1]
-                        - lowestCombinedPayoff;
-                double percentAbsurd = 1.0 - absurdValue / absurdDist;
-                double placateDist = highestOtherPayoff - highestCombinedPayoff / 2;
-                double placateValue = intersection[1] - highestCombinedPayoff / 2;
-                double placatePercent = placateValue / placateDist;
-                mergedAttitude[1] = placatePercent;
-                mergedAttitude[2] = 1.0 - placatePercent;
-                mergedAttitude[3] = percentAbsurd;
-            } else
-            {
-                double combinedDistance = highestCombinedPayoff - lowestCombinedPayoff;
-                double combinedValue = averagedPayoffs[0]
-                        + averagedPayoffs[1] - lowestCombinedPayoff;
-                double percentCooperative = combinedValue / combinedDistance;
-                mergedAttitude[2] = percentCooperative;
-                mergedAttitude[3] = 1 - percentCooperative;
-            }
-        }
-        return mergedAttitude;
-    }
+//    private double[] mergeActionPairs(int[] actPair1, int[] actPair2)
+//    {
+//        double[] mergedAttitude = new double[4];
+//        double[] averagedPayoffs = new double[2];
+//        averagedPayoffs[0] = (game.getPayoffMatrix().getRowPlayerValue(actPair1[0], actPair1[1]) +
+//                game.getPayoffMatrix().getRowPlayerValue(actPair2[0], actPair2[1])) / 2;
+//        averagedPayoffs[1] = (game.getPayoffMatrix().getColPlayerValue(actPair1[0], actPair1[1]) +
+//                game.getPayoffMatrix().getColPlayerValue(actPair2[0], actPair2[1])) / 2;
+//        if(averagedPayoffs[0] + averagedPayoffs[1] >= highestCombinedPayoff)
+//        {
+//            mergedAttitude[0] = 1;
+//        } else if(averagedPayoffs[0] >= highestPayoff)
+//        {
+//            mergedAttitude[1] = 1;
+//        } else if(averagedPayoffs[1] >= highestOtherPayoff)
+//        {
+//            mergedAttitude[2] = 1;
+//        } else if(averagedPayoffs[0] + averagedPayoffs[1] <= lowestCombinedPayoff)
+//        {
+//            mergedAttitude[3] = 1;
+//        } else
+//        {
+//            double distGreedy = highestPayoff - averagedPayoffs[0];
+//            double distPlacate = highestOtherPayoff - averagedPayoffs[1];
+//            if(distGreedy > distPlacate)
+//            {
+//                double[] intersection = calculateIntersection(greedyCoords[0], greedyCoords[1],
+//                        cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
+//                        absurdCoords[1], averagedPayoffs[0], averagedPayoffs[1]);
+//                double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
+//                double absurdValue = averagedPayoffs[0] + averagedPayoffs[1]
+//                        - lowestCombinedPayoff;
+//                double percentAbsurd = 1.0 - absurdValue / absurdDist;
+//                double greedyDist = highestPayoff - highestCombinedPayoff / 2;
+//                double greedyValue = intersection[0] - highestCombinedPayoff / 2;
+//                double greedyPercent = greedyValue / greedyDist;
+//                mergedAttitude[0] = greedyPercent;
+//                mergedAttitude[2] = 1.0 - greedyPercent;
+//                mergedAttitude[3] = percentAbsurd;
+//            } else if(distGreedy < distPlacate)
+//            {
+//                double[] intersection = calculateIntersection(placateCoords[0], placateCoords[1],
+//                        cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
+//                        absurdCoords[1], averagedPayoffs[0], averagedPayoffs[1]);
+//                double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
+//                double absurdValue = averagedPayoffs[0] + averagedPayoffs[1]
+//                        - lowestCombinedPayoff;
+//                double percentAbsurd = 1.0 - absurdValue / absurdDist;
+//                double placateDist = highestOtherPayoff - highestCombinedPayoff / 2;
+//                double placateValue = intersection[1] - highestCombinedPayoff / 2;
+//                double placatePercent = placateValue / placateDist;
+//                mergedAttitude[1] = placatePercent;
+//                mergedAttitude[2] = 1.0 - placatePercent;
+//                mergedAttitude[3] = percentAbsurd;
+//            } else
+//            {
+//                double combinedDistance = highestCombinedPayoff - lowestCombinedPayoff;
+//                double combinedValue = averagedPayoffs[0]
+//                        + averagedPayoffs[1] - lowestCombinedPayoff;
+//                double percentCooperative = combinedValue / combinedDistance;
+//                mergedAttitude[2] = percentCooperative;
+//                mergedAttitude[3] = 1 - percentCooperative;
+//            }
+//        }
+//        return mergedAttitude;
+//    }
 
 }
