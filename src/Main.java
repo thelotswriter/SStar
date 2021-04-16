@@ -15,6 +15,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
 public class Main
@@ -63,17 +65,16 @@ public class Main
                     ArrayList<Game> games = new ArrayList<>();
                     for(int f = 0; f < files.length / 2; f++)
                     {
-//                System.out.println(f);
                         TXTtoGame txtToGame = new TXTtoGame();
                         games.add(txtToGame.openFile(files[f * 2].getPath(), files[f * 2 + 1].getPath()));
                     }
 //                    clusterAttitudeVectors(files, games);
                     // =============START=============
-                    Collection<Collection<Feature>> featureCollection = new ArrayList<>();
+                    List<List<Feature>> featureCollection = new ArrayList<>();
                     for(int g = 0; g < games.size(); g++)
                     {
                         GameToFeatureList gameToFeatureList = new GameToFeatureList(games.get(g));
-                        Collection<Feature> fCollection = gameToFeatureList.generateFeatureList(nNeighbors, discount, pPower);
+                        List<Feature> fCollection = gameToFeatureList.generateFeatureList(nNeighbors, discount, pPower);
                         featureCollection.add(fCollection);
                     }
                     int maxDAVClusters = 8;
@@ -101,6 +102,76 @@ public class Main
                 {
                     ActionAttitudeConverterTest aacTest = new ActionAttitudeConverterTest();
                     aacTest.run();
+                    break;
+                } case 6:
+                {
+                    System.out.println("Enter training percentage:");
+                    double training = keys.nextDouble();
+                    System.out.println("Enter memory length:");
+                    int mem = keys.nextInt();
+                    System.out.println("Enter number of trees:");
+                    int trees = keys.nextInt();
+                    SplitAutomataTest splitAutomataTest = new SplitAutomataTest(training, mem, trees);
+                    splitAutomataTest.run(1, true);
+                    break;
+                }
+                case 7:
+                {
+//                    System.out.println("What memory length?");
+//                    int mem = keys.nextInt();
+//                    System.out.println("How many automata?");
+//                    int trees = keys.nextInt();
+                    int maxMem = 4;
+                    int maxTrees = 1;
+                    double[][][][] allAvgResults = new double[maxMem + 1][maxTrees + 1][][];
+                    for(int m = 1; m <= maxMem; m++)
+                    {
+                        for(int t = 1; t <= maxTrees; t++)
+                        {
+                            System.out.print("========M");;
+                            System.out.print(m);
+                            System.out.print("T");
+                            System.out.print(t);
+                            System.out.println("===============");
+                            List<double[][]> results = new ArrayList<>();
+                            for(int i = 0; i < 200; i++)
+                            {
+                                System.out.print(i);
+                                System.out.print(" ");
+                                boolean read = true;
+                                while(read)
+                                {
+                                    try
+                                    {
+                                        SplitAutomataTest splitAutomataTest = new SplitAutomataTest(0.9, m, t);
+                                        double[][] result = splitAutomataTest.run(i + 1, false);
+                                        results.add(result);
+                                        read = false;
+                                    } catch(NullPointerException e)
+                                    {
+                                        read = true;
+                                    }
+
+                                }
+                            }
+                            System.out.println();
+                            double[][] avgResults = new double[7][14];
+                            for(double[][] result : results)
+                            {
+                                for(int r = 0; r < result.length; r++)
+                                {
+                                    for(int c = 0; c < result[r].length; c++)
+                                    {
+                                        avgResults[r][c] += result[r][c] / ((double) results.size());
+                                    }
+                                }
+                            }
+                            allAvgResults[m][t] = avgResults;
+                            publishSplitAutomataResults(results, m, t);
+                        }
+                    }
+                    publishAllAvgSplitResults(allAvgResults);
+                    break;
                 } default:
                 {
                     System.out.println("Invalid Selection. Try again..");
@@ -176,6 +247,203 @@ public class Main
             }
         }
         System.out.println("Done");
+    }
+
+    private static void publishAllAvgSplitResults(double[][][][] allAvgResults)
+    {
+        StringBuilder fBuilder = new StringBuilder();
+        fBuilder.append(dir);
+        fBuilder.append("\\Avg Split Results.csv");
+        try(FileWriter fileWriter = new FileWriter(fBuilder.toString()))
+        {
+            for(int m = 1; m < allAvgResults.length; m++)
+            {
+                for(int r = 0; r < allAvgResults[m][1].length; r++)
+                {
+                    StringBuilder b = new StringBuilder();
+                    for(int t = 1; t < allAvgResults[m].length; t++)
+                    {
+                        for(int c = 0; c < allAvgResults[m][t][r].length; c++)
+                        {
+                            b.append(allAvgResults[m][t][r][c]);
+                            b.append(',');
+                        }
+                        b.append(',');
+                    }
+                    b.append('\n');
+                    fileWriter.append(b.toString());
+                }
+                fileWriter.append('\n');
+            }
+            publishAllAvgSplitResultsSummary(allAvgResults);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private static void publishAllAvgSplitResultsSummary(double[][][][] allAvgResults)
+    {
+        StringBuilder fBuilder = new StringBuilder();
+        fBuilder.append(dir);
+        fBuilder.append("\\Summary Avg Split Results.csv");
+        double[][][] resultSummary = new double[allAvgResults.length - 1][allAvgResults[1].length - 1][2];
+        for(int m = 1; m < allAvgResults.length; m++)
+        {
+            for(int t = 1; t < allAvgResults[m].length; t++)
+            {
+                for(int r = 0; r < allAvgResults[m][t].length; r++)
+                {
+                    for(int c = 0; c < allAvgResults[m][t][r].length; c++)
+                    {
+                        if(c < 7)
+                        {
+                            resultSummary[m - 1][t - 1][0] += allAvgResults[m][t][r][c] / 49.0;
+                        } else
+                        {
+                            resultSummary[m - 1][t - 1][1] += allAvgResults[m][t][r][c] / 49.0;
+                        }
+                    }
+                }
+            }
+        }
+        try(FileWriter fileWriter = new FileWriter(fBuilder.toString()))
+        {
+            NumberFormat formatter = new DecimalFormat("#0.000");
+            for(int r = 0; r < resultSummary.length; r++)
+            {
+                StringBuilder b = new StringBuilder();
+                for(int c = 0; c < resultSummary[r].length; c++)
+                {
+                    b.append(formatter.format(resultSummary[r][c][0]));
+                    b.append(" & ");
+                    b.append(formatter.format(resultSummary[r][c][1]));
+                    b.append(',');
+                }
+                b.append('\n');
+                fileWriter.append(b.toString());
+            }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        publishAllDiagAvgSplitResultsSummary(allAvgResults);
+    }
+
+    private static void publishAllDiagAvgSplitResultsSummary(double[][][][] allAvgResults)
+    {
+        StringBuilder fBuilder = new StringBuilder();
+        fBuilder.append(dir);
+        fBuilder.append("\\Summary Diagonal Avg Split Results.csv");
+        double[][][] resultSummary = new double[allAvgResults.length - 1][allAvgResults[1].length - 1][4];
+        for(int m = 1; m < allAvgResults.length; m++)
+        {
+            for(int t = 1; t < allAvgResults[m].length; t++)
+            {
+                for(int r = 0; r < allAvgResults[m][t].length; r++)
+                {
+                    for(int c = 0; c < allAvgResults[m][t][r].length; c++)
+                    {
+                        if(c < 7)
+                        {
+                            if(r == c)
+                            {
+                                resultSummary[m - 1][t - 1][0] += allAvgResults[m][t][r][c] / 7.0;
+                            } else
+                            {
+                                resultSummary[m - 1][t - 1][1] += allAvgResults[m][t][r][c] / 42.0;
+                            }
+                        } else
+                        {
+                            if(r == c - 7)
+                            {
+                                resultSummary[m - 1][t - 1][2] += allAvgResults[m][t][r][c] / 7.0;
+                            } else
+                            {
+                                resultSummary[m - 1][t - 1][3] += allAvgResults[m][t][r][c] / 42.0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        try(FileWriter fileWriter = new FileWriter(fBuilder.toString()))
+        {
+            NumberFormat formatter = new DecimalFormat("#0.000");
+            for(int r = 0; r < resultSummary.length; r++)
+            {
+                StringBuilder b = new StringBuilder();
+                for(int c = 0; c < resultSummary[r].length; c++)
+                {
+                    b.append(formatter.format(resultSummary[r][c][0]));
+                    b.append(" - ");
+                    b.append(formatter.format(resultSummary[r][c][1]));
+                    b.append(" & ");
+                    b.append(formatter.format(resultSummary[r][c][2]));
+                    b.append(" - ");
+                    b.append(formatter.format(resultSummary[r][c][3]));
+                    b.append(',');
+                }
+                b.append('\n');
+                fileWriter.append(b.toString());
+            }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private static void publishSplitAutomataResults(List<double[][]> results, int mem, int trees)
+    {
+        double[][] avgResults = new double[7][14];
+        for(double[][] result : results)
+        {
+            for(int r = 0; r < result.length; r++)
+            {
+                for(int c = 0; c < result[r].length; c++)
+                {
+                    avgResults[r][c] += result[r][c] / ((double) results.size());
+                }
+            }
+        }
+        NumberFormat formatter = new DecimalFormat("#0.000");
+        for(int r = 0; r < avgResults.length; r++)
+        {
+            for(int c = 0; c < avgResults[r].length; c++)
+            {
+                System.out.print(formatter.format(avgResults[r][c]));
+                System.out.print('\t');
+            }
+            System.out.println();
+        }
+        StringBuilder fileNameBuilder = new StringBuilder();
+        fileNameBuilder.append(dir);
+        fileNameBuilder.append("\\Split Results Mem");
+        fileNameBuilder.append(mem);
+        fileNameBuilder.append(" Trees");
+        fileNameBuilder.append(trees);
+        fileNameBuilder.append(".csv");
+        try(FileWriter fWriter = new FileWriter(fileNameBuilder.toString()))
+        {
+            for(double[][] resultMatrix : results)
+            {
+                for(int r = 0; r < resultMatrix.length; r++)
+                {
+                    StringBuilder lineBuilder = new StringBuilder();
+                    for(int c = 0; c < resultMatrix[r].length; c++)
+                    {
+                        lineBuilder.append(resultMatrix[r][c]);
+                        lineBuilder.append(',');
+                    }
+                    lineBuilder.append('\n');
+                    fWriter.append(lineBuilder.toString());
+                }
+                fWriter.append('\n');
+            }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private static void printAVClusteredFiles(Game game, File originalFile, DistantDataCluster[] dispAVClusters, DistantDataCluster[] saidAVClusters)

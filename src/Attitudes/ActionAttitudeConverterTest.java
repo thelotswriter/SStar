@@ -82,6 +82,8 @@ public class ActionAttitudeConverterTest
             Game game = games[g];
             List<Feature> fList = fLists.get(g);
             ActionAttitudeConverter converter = new ActionAttitudeConverter(game.getPayoffMatrix(), pPower);
+            Player p1 = game.getPlayer1();
+            Player p2 = game.getPlayer2();
             ArrayList<Integer> originalActions =  game.getPlayer1().getActionHistory();
             ArrayList<SpeechAct[]> originalMessages = game.getPlayer1().getMessageHistory();
             ArrayList<Integer> originalOtherActions = game.getPlayer2().getActionHistory();
@@ -106,7 +108,8 @@ public class ActionAttitudeConverterTest
 //            prevOtherConverted[3] = -1;
             for(int hist = 0; hist < fList.size(); hist++)
             {
-                int[] converted = converter.attitudeVectorToActionWithPrevActionPair(prevActPair, fList.get(hist).getAttitudeDisplayed());
+                int[] converted = converter.attitudeVectorToActionsWithPPower(fList.get(hist).getAttitudeDisplayed());
+//                int[] converted = converter.attitudeVectorToActionWithPrevActionPair(prevActPair, fList.get(hist).getAttitudeDisplayed());
 //                if(converted[0] == prevConverted[0] && converted[1] == prevConverted[1]
 //                        && converted[2] == prevConverted[2] && converted[3] == prevConverted[3])
 //                {
@@ -117,14 +120,25 @@ public class ActionAttitudeConverterTest
 //                    converted[2] = temp0;
 //                    converted[3] = temp1;
 //                }
-                if(originalActions.get(hist).equals(converted[0]))
+                int og1 = p1.getAction(hist);
+                int og2 = p2.getAction(hist);
+                int conv1 = converted[0];
+                if(og1 == conv1)
                 {
                     nMatched++;
+                } else
+                {
+                    System.out.println("Urf? " + hist);
                 }
-                int[] otherConverted = converter.attitudeVectorToActionWithPrevActionPair(prevOtherActPair, fList.get(hist).getOtherAttitudeDisplayed());
-                if(originalOtherActions.get(hist).equals(otherConverted[0]))
+                int[] otherConverted = converter.attitudeVectorToActionsWithPPower(fList.get(hist).getOtherAttitudeDisplayed());
+//                int[] otherConverted = converter.attitudeVectorToActionWithPrevActionPair(prevOtherActPair, fList.get(hist).getOtherAttitudeDisplayed());
+                int conv2 = otherConverted[0];
+                if(og2 == conv2)
                 {
                     nOtherMatched++;
+                } else
+                {
+                    System.out.println("Erf? " + hist);
                 }
                 prevActPair[0] = originalActions.get(hist);
                 prevActPair[1] = originalOtherActions.get(hist);
@@ -238,7 +252,7 @@ public class ActionAttitudeConverterTest
             fWriter.append(avpBuilder.toString());
             fWriter.append('\n');
             // P1_Orig_Act P2_Orig_Act Feature P1_Conv_Act P2_Conv_Act
-            fWriter.append("P1 OG,P2 OG, AV1,AV1,P1 Conv,P2 Conv");
+            fWriter.append("P1 OG,P2 OG, AV1,AV2,P1 Conv,P2 Conv");
             fWriter.append('\n');
             Player p1 = game.getPlayer1();
             Player p2 = game.getPlayer2();

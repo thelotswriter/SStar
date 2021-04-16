@@ -9,6 +9,8 @@ public class Game
     private Player player2;
     private PayoffMatrix payoffMatrix;
 
+    private String name;
+
     /**
      * Creates a two player game with a payoff matrix and no players
      * @param pMatrix The payoff matrix for the game
@@ -26,11 +28,12 @@ public class Game
      * @param player1 The first player
      * @param player2 The second player
      */
-    public Game(PayoffMatrix pMatrix, Player player1, Player player2)
+    public Game(PayoffMatrix pMatrix, Player player1, Player player2, String name)
     {
         payoffMatrix = pMatrix;
         this.player1 = player1;
         this.player2 = player2;
+        this.name = name;
     }
 
     /**
@@ -108,6 +111,11 @@ public class Game
         Player temp = player1;
         player1 = player2;
         player2 = temp;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
 }

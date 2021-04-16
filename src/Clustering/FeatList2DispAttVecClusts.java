@@ -25,10 +25,10 @@ public class FeatList2DispAttVecClusts
 
     }
 
-    public DistantDataCluster[] getDisplayedAttitudeVectorCluster(int minClusters, int nClusters, Collection<Collection<Feature>> featureList)
+    public DistantDataCluster[] getDisplayedAttitudeVectorCluster(int minClusters, int nClusters, List<List<Feature>> featureList)
     {
         List<Feature> features = new ArrayList<>();
-        for(Collection<Feature> fList : featureList)
+        for(List<Feature> fList : featureList)
         {
             features.addAll(fList);
         }

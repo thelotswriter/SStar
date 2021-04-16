@@ -29,13 +29,13 @@ public class kMeansDistantSilhouette
         double bestSilhouette = -2;
         for(int k = minK; k <= maxK; k++)
         {
-            System.out.print("k = ");
-            System.out.print(k);
+//            System.out.print("k = ");
+//            System.out.print(k);
             kMeansDistant kMD = new kMeansDistant(k, distantData);
             DistantDataCluster[] clusters = kMD.calculateClusters();
             double silhouette = calculateSilhouette(clusters);
-            System.out.print(" score = ");
-            System.out.println(silhouette);
+//            System.out.print(" score = ");
+//            System.out.println(silhouette);
             if(silhouette > bestSilhouette)
             {
                 bestSilhouette = silhouette;

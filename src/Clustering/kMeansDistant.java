@@ -87,7 +87,7 @@ public class kMeansDistant
             centroids[i] = clusters[i].getCentroid();
         }
         boolean centroidsChanged = true;
-        int timer = 10000;
+        int timer = 1000;
         int counter = 0;
         while (centroidsChanged && timer > 0)
         {

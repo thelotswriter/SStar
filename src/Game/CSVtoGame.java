@@ -54,7 +54,7 @@ public class CSVtoGame
         Player[] players = generatePlayers(data);
         Player player1 = players[0];
         Player player2 = players[1];
-        return new Game(new PayoffMatrix(generatePayoffMatrix(data)), player1, player2);
+        return new Game(new PayoffMatrix(generatePayoffMatrix(data)), player1, player2, path.substring(path.lastIndexOf("\\")));
     }
 
     /**

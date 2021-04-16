@@ -23,7 +23,7 @@ public class TXTtoGame
         ArrayList<String[]> messageStrings = readMessageFile(messagePath);
         generateMatrix(activityStrings);
         Player[] players = generatePlayers(activityStrings, messageStrings);
-        return new Game(new PayoffMatrix(matrix), players[0], players[1]);
+        return new Game(new PayoffMatrix(matrix), players[0], players[1], activityPath.substring(activityPath.lastIndexOf("\\")));
     }
 
     private ArrayList<String[]> readActivityFile(String path)
@@ -83,10 +83,12 @@ public class TXTtoGame
         } catch (FileNotFoundException e)
         {
             System.err.println(e.getMessage());
+            System.out.println("Err1");
             return null;
         } catch (IOException e)
         {
             System.err.println(e.getMessage());
+            System.out.println("Err2");
             return null;
         }
         return data;
@@ -130,6 +132,10 @@ public class TXTtoGame
                 break;
             }
         }
+        if(numActions <= 1)
+        {
+            numActions = 2;
+        }
         matrix = new double[numActions][numActions][2];
         boolean[][] checkedMatrix = new boolean[numActions][numActions];
         int numChecked = 0;
@@ -167,18 +173,37 @@ public class TXTtoGame
         {
             if(matrix.length == 2)
             {
-                if(!checkedMatrix[0][0])
+                if(matrix[0][0][0] == 0.6 || matrix[0][1][1] == 1.0 || matrix[1][1][0] == 0.2)
                 {
-                    matrix[0][0][0] = 0;
-                    matrix[0][0][1] = 0;
-                }
-                if(!checkedMatrix[0][1])
+                    matrix[0][0][0] = 0.6;
+                    matrix[0][0][1] = 0.6;
+                    matrix[0][1][0] = 0;
+                    matrix[0][1][1] = 1;
+                    matrix[1][0][0] = 1;
+                    matrix[1][0][1] = 0;
+                    matrix[1][1][0] = 0.2;
+                    matrix[1][1][1] = 0.2;
+                } else
                 {
-                    matrix[0][1][0] = 0.35;
-                    matrix[0][1][1] = 0.7;
-                    matrix[1][0][0] = 0.7;
-                    matrix[1][0][1] = 0.35;
+                    matrix[0][1][0] = 1;
+                    matrix[0][1][1] = 0.33;
+                    matrix[1][0][0] = 0.33;
+                    matrix[1][0][1] = 1;
+                    matrix[1][1][0] = 0.84;
+                    matrix[1][1][1] = 0.84;
                 }
+//                if(!checkedMatrix[0][0])
+//                {
+//                    matrix[0][0][0] = 0;
+//                    matrix[0][0][1] = 0;
+//                }
+//                if(!checkedMatrix[0][1])
+//                {
+//                    matrix[0][1][0] = 0.35;
+//                    matrix[0][1][1] = 0.7;
+//                    matrix[1][0][0] = 0.7;
+//                    matrix[1][0][1] = 0.35;
+//                }
 //                if(!checkedMatrix[0][2])
 //                {
 //                    matrix[0][2][0] = 1;
@@ -186,11 +211,11 @@ public class TXTtoGame
 //                    matrix[2][0][0] = 0.4;
 //                    matrix[2][0][1] = 1;
 //                }
-                if(!checkedMatrix[1][1])
-                {
-                    matrix[1][1][0] = 0.1;
-                    matrix[1][1][1] = 0.1;
-                }
+//                if(!checkedMatrix[1][1])
+//                {
+//                    matrix[1][1][0] = 0.2;
+//                    matrix[1][1][1] = 0.2;
+//                }
 //                if(!checkedMatrix[1][2])
 //                {
 //                    matrix[1][2][0] = 0.45;

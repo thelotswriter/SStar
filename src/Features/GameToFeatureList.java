@@ -40,126 +40,6 @@ public class GameToFeatureList
     }
 
     /**
-     * Creates a list of features to demonstrate the row player's
-     * environment, actions, and message3s
-     * @return List of Features.Feature objects representing the row player's environment and reactions
-     */
-    public FeatureList generateRawFeatureList()
-    {
-        List<Feature> featureList = new ArrayList<>();
-        for(int round = 0; round < game.getNumRounds(); round++)
-        {
-//            System.out.println(round);
-            Feature feature = new Feature();
-            int[] actionPair = game.getActionPair(round);
-            AttitudeVector attitudeDisplayed = converter.getAttitudeVectorFromActionPair(actionPair[0], actionPair[1]); // new AttitudeVector(aMatrix[actionPair[0]][actionPair[1]]);
-            feature.setAttitudeDisplayed(attitudeDisplayed);
-            SpeechAct[] messages = game.getPlayer1().getMessage(round);
-            List<int[]> actsSuggested = effectiveActionsSuggested(game.getNumRowActions(), messages);
-            if(actsSuggested.isEmpty())
-            {
-                feature.setAttitudeSaid(new AttitudeVector(0, 0, 0, 0));
-                feature.setIntegrity(0);
-            } else
-            {
-                boolean alignedAction = false;
-                double[] combinedAttitudes = new double[4];
-                for(int[] actSuggested : actsSuggested)
-                {
-                    if(!alignedAction && actSuggested[0] == actionPair[0])
-                    {
-                        alignedAction = true;
-                        feature.setIntegrity(1);
-                    }
-                    AttitudeVector aV = converter.getAttitudeVectorFromActionPair(actSuggested[0], actSuggested[1]); // aMatrix[actSuggested[0]][actSuggested[1]];
-                    combinedAttitudes[0] += aV.getGreedy();
-                    combinedAttitudes[1] += aV.getPlacate();
-                    combinedAttitudes[2] += aV.getCooperate();
-                    combinedAttitudes[3] += aV.getAbsurd();
-                }
-                if(!alignedAction)
-                {
-                    feature.setIntegrity(-1);
-                }
-                if(combinedAttitudes[0] > combinedAttitudes[1])
-                {
-                    combinedAttitudes[0] -= combinedAttitudes[1];
-                    combinedAttitudes[1] = 0;
-                } else if(combinedAttitudes[0] < combinedAttitudes[1])
-                {
-                    combinedAttitudes[1] -= combinedAttitudes[0];
-                    combinedAttitudes[0] = 0;
-                } else
-                {
-                    combinedAttitudes[0] = 0;
-                    combinedAttitudes[1] = 1;
-                }
-                if(combinedAttitudes[2] > combinedAttitudes[3])
-                {
-                    combinedAttitudes[2] -= combinedAttitudes[3];
-                    combinedAttitudes[3] = 0;
-                } else if(combinedAttitudes[2] < combinedAttitudes[3])
-                {
-                    combinedAttitudes[3] -= combinedAttitudes[2];
-                    combinedAttitudes[2] = 0;
-                } else
-                {
-                    combinedAttitudes[2] = 0;
-                    combinedAttitudes[3] = 0;
-                }
-                feature.setAttitudeSaid(new AttitudeVector(combinedAttitudes[0],
-                        combinedAttitudes[1], combinedAttitudes[2], combinedAttitudes[3]));
-            }
-            AttitudeVector otherAttitudeDisplayed = new AttitudeVector(converter.getAttitudeVectorFromActionPair(actionPair[1], actionPair[0])); //(aMatrix[actionPair[1]][actionPair[0]]);
-            feature.setOtherAttitudeDisplayed(otherAttitudeDisplayed);
-//            feature.setIntegrity(0);
-            //*********************************
-            if(actsSuggested.isEmpty())
-            {
-                feature.setIntegrity(0);
-            } else
-            {
-                boolean isAligned = false;
-                for(int[] actSuggested : actsSuggested)
-                {
-                    if(!isAligned && actSuggested[0] == actionPair[0])
-                    {
-                        feature.setIntegrity(1);
-                        isAligned = true;
-                    }
-                }
-                if(!isAligned)
-                {
-                    feature.setIntegrity(-1);
-                }
-            }
-            SpeechAct[] otherMessages = game.getPlayer2().getMessage(round);
-            List<int[]> otherActsSuggested = effectiveActionsSuggested(game.getNumRowActions(), otherMessages);
-            if(otherActsSuggested.isEmpty())
-            {
-                feature.setDeference(0);
-            } else
-            {
-                boolean isAligned = false;
-                for(int[] otherActSuggested : otherActsSuggested)
-                {
-                    if(!isAligned && otherActSuggested[1] == actionPair[0])
-                    {
-                        feature.setDeference(1);
-                        isAligned = true;
-                    }
-                }
-                if(!isAligned)
-                {
-                    feature.setDeference(-1);
-                }
-            }
-            featureList.add(feature);
-        }
-        return new FeatureList(featureList);
-    }
-
-    /**
      * Generates a list of features representative of the row player's strategy
      * @param neighbors Number of
      * @param predictivePower
@@ -204,31 +84,43 @@ public class GameToFeatureList
                     jointAttitudesSaid[2], jointAttitudesSaid[3]));
             feature.setOtherAttitudeSaid(new AttitudeVector(jointAttitudesOtherSaid[0], jointAttitudesOtherSaid[1],
                     jointAttitudesOtherSaid[2], jointAttitudesOtherSaid[3]));
-            attitudeDisplayed.add(combineAttitudeArrays(generateAttitudeArray(actPair[0], actPair[1]),
-                    generateAverageAttitude(actPair[0]), predictivePower));
-            aDNeedsAveraging.add(true);
-//            }
-            attitudeOtherDisplayed.add(combineAttitudeArrays(generateAttitudeArray(actPair[1], actPair[0]),
-                    generateAverageAttitude(actPair[1]), predictivePower));
+            feature.setAttitudeDisplayed(converter.getAttitudeVectorFromActionPair(actPair[0], actPair[1]));
+            feature.setOtherAttitudeDisplayed(converter.getAttitudeVectorFromActionPair(actPair[1], actPair[0]));
+//            attitudeDisplayed.add(combineAttitudeArrays(generateAttitudeArray(actPair[0], actPair[1]),
+//                    generateAverageAttitude(actPair[0]), predictivePower));
+//            aDNeedsAveraging.add(true);
+////            }
+//            attitudeOtherDisplayed.add(combineAttitudeArrays(generateAttitudeArray(actPair[1], actPair[0]),
+//                    generateAverageAttitude(actPair[1]), predictivePower));
             featureList.add(feature);
 //            prevAction = actPair;
         }
-        AttitudeVector prevAV = null;
-        AttitudeVector prevOtherAV = null;
-        for(int f = 0; f < featureList.size(); f++)
+        for(int f = 1; f < featureList.size(); f++)
         {
-            AttitudeVector oldAV = featureList.get(f).getAttitudeDisplayed();
-            AttitudeVector oldOtherAV = featureList.get(f).getOtherAttitudeDisplayed();
-            if(prevAV != null && prevOtherAV != null)
-            {
-                AttitudeVector newAV = new AttitudeVector(prevAV.getGreedy() + oldAV.getGreedy(), prevAV.getPlacate() + oldAV.getPlacate(),prevAV.getCooperate() + oldAV.getCooperate(), prevAV.getAbsurd() + oldAV.getAbsurd());
-                AttitudeVector newOtherAV = new AttitudeVector(prevOtherAV.getGreedy() + oldOtherAV.getGreedy(), prevOtherAV.getPlacate() + oldOtherAV.getPlacate(), prevOtherAV.getCooperate() + oldOtherAV.getCooperate(), prevOtherAV.getAbsurd() + oldOtherAV.getAbsurd());
-                featureList.get(f).setAttitudeDisplayed(newAV);
-                featureList.get(f).setOtherAttitudeDisplayed(newOtherAV);   
-            }
-            prevAV = oldAV;
-            prevOtherAV = oldOtherAV;
+            int[] prevActPair = game.getActionPair(f - 1);
+            AttitudeVector unalteredAD = featureList.get(f).getAttitudeDisplayed();
+            AttitudeVector unalteredOAD = featureList.get(f).getOtherAttitudeDisplayed();
+            AttitudeVector unalteredPrevAD = converter.getAttitudeVectorFromActionPair(prevActPair[0], prevActPair[1]);
+            AttitudeVector unalteredPrevAOD = converter.getAttitudeVectorFromActionPair(prevActPair[1], prevActPair[0]);
+            featureList.get(f).setAttitudeDisplayed(AttitudeVector.average(unalteredPrevAD, unalteredAD));
+            featureList.get(f).setOtherAttitudeDisplayed(AttitudeVector.average(unalteredPrevAOD, unalteredOAD));
         }
+//        AttitudeVector prevAV = null;
+//        AttitudeVector prevOtherAV = null;
+//        for(int f = 0; f < featureList.size(); f++)
+//        {
+//            AttitudeVector oldAV = featureList.get(f).getAttitudeDisplayed();
+//            AttitudeVector oldOtherAV = featureList.get(f).getOtherAttitudeDisplayed();
+//            if(prevAV != null && prevOtherAV != null)
+//            {
+//                AttitudeVector newAV = new AttitudeVector(prevAV.getGreedy() + oldAV.getGreedy(), prevAV.getPlacate() + oldAV.getPlacate(),prevAV.getCooperate() + oldAV.getCooperate(), prevAV.getAbsurd() + oldAV.getAbsurd());
+//                AttitudeVector newOtherAV = new AttitudeVector(prevOtherAV.getGreedy() + oldOtherAV.getGreedy(), prevOtherAV.getPlacate() + oldOtherAV.getPlacate(), prevOtherAV.getCooperate() + oldOtherAV.getCooperate(), prevOtherAV.getAbsurd() + oldOtherAV.getAbsurd());
+//                featureList.get(f).setAttitudeDisplayed(newAV);
+//                featureList.get(f).setOtherAttitudeDisplayed(newOtherAV);
+//            }
+//            prevAV = oldAV;
+//            prevOtherAV = oldOtherAV;
+//        }
 //        List<double[]> unconvertedAttitudesDisplayed
 //                = averageAttitudesDisplayed(attitudeDisplayed, generateDiscountArray(neighbors, discount));
 //        List<double[]> unconvertedOtherAttitudesDisplayed
@@ -537,235 +429,235 @@ public class GameToFeatureList
         return combinedMessage;
     }
 
-    private double calculateIntegrity(double prevIntegrity, int[] prevAction, List<int[]> message, int playerAct, boolean newMessage)
-    {
-        if(newMessage)
-        {
-            if(message.get(0)[0] == playerAct)
-            {
-                return 1;
-            }
-            return -1;
-        } else if(prevIntegrity > 0)
-        {
-            if(message.size() > 1)
-            {
-                if(message.get(0)[0] == prevAction[0])
-                {
-                    if(message.get(1)[0] == playerAct)
-                    {
-                        return 1;
-                    }
-                    return 0;
-                } else
-                {
-                    if(message.get(0)[0] == playerAct)
-                    {
-                        return 1;
-                    }
-                    return 0;
-                }
-            } else
-            {
-                if(message.get(0)[0] == playerAct)
-                {
-                    return 1;
-                }
-                return 0;
-            }
-        } else
-        {
-            return 0;
-        }
-    }
-
-    private double calculateDeference(double prevDeference, int[] prevAction, List<int[]> message, int playerAct, boolean newMessage)
-    {
-        if(newMessage)
-        {
-            if(message.get(0)[1] == playerAct)
-            {
-                return 1;
-            }
-            return -1;
-        } else if(prevDeference > 0)
-        {
-            if(message.size() > 1)
-            {
-                if(message.get(0)[1] == prevAction[0])
-                {
-                    if(message.get(1)[1] == playerAct)
-                    {
-                        return 1;
-                    }
-                    return 0;
-                } else
-                {
-                    if(message.get(0)[1] == playerAct)
-                    {
-                        return 1;
-                    }
-                    return 0;
-                }
-            } else
-            {
-                if(message.get(0)[1] == playerAct)
-                {
-                    return 1;
-                }
-                return 0;
-            }
-        } else
-        {
-            return 0;
-        }
-    }
-
-    private double[] generateAverageAttitude(int actTaken)
-    {
-        double[] attitudeArray = new double[4];
-        for(int act = 0; act < game.getNumRowActions(); act++)
-        {
-            attitudeArray[0] += converter.getAttitudeVectorFromActionPair(actTaken, act).getGreedy(); //aMatrix[actTaken][act].getGreedy();
-            attitudeArray[1] += converter.getAttitudeVectorFromActionPair(actTaken, act).getPlacate(); //aMatrix[actTaken][act].getPlacate();
-            attitudeArray[2] += converter.getAttitudeVectorFromActionPair(actTaken, act).getCooperate(); //aMatrix[actTaken][act].getCooperate();
-            attitudeArray[3] += converter.getAttitudeVectorFromActionPair(actTaken, act).getAbsurd(); //aMatrix[actTaken][act].getAbsurd();
-        }
-        if(attitudeArray[0] > attitudeArray[1])
-        {
-            attitudeArray[0] -= attitudeArray[1];
-            attitudeArray[1] = 0;
-        } else if(attitudeArray[0] < attitudeArray[1])
-        {
-            attitudeArray[1] -= attitudeArray[0];
-            attitudeArray[0] = 0;
-        } else
-        {
-            attitudeArray[0] = 0;
-            attitudeArray[1] = 0;
-        }
-        double total = attitudeArray[0] + attitudeArray[1] + attitudeArray[2] + attitudeArray[3];
-        attitudeArray[0] = attitudeArray[0] / total;
-        attitudeArray[1] = attitudeArray[1] / total;
-        attitudeArray[2] = attitudeArray[2] / total;
-        attitudeArray[3] = attitudeArray[3] / total;
-        return attitudeArray;
-    }
-
-    private double[] generateAttitudeArray(int rowAct, int colAct)
-    {
-        AttitudeVector aV = new AttitudeVector(converter.getAttitudeVectorFromActionPair(rowAct, colAct)); //(aMatrix[rowAct][colAct]);
-        double[] attitudeArray = new double[4];attitudeArray[0] = aV.getGreedy();
-        attitudeArray[0] = aV.getGreedy();
-        attitudeArray[1] = aV.getPlacate();
-        attitudeArray[2] = aV.getCooperate();
-        attitudeArray[3] = aV.getAbsurd();
-         return attitudeArray;
-    }
-
-    private double[] combineAttitudeArrays(double[] pickedArray, double[] blindArray, double guessingPower)
-    {
-        double[] combinedArray = new double[4];
-        if(guessingPower >= 1)
-        {
-            combinedArray[0] = pickedArray[0];
-            combinedArray[1] = pickedArray[1];
-            combinedArray[2] = pickedArray[2];
-            combinedArray[3] = pickedArray[3];
-        } else if(guessingPower <= 0)
-        {
-            combinedArray[0] = blindArray[0];
-            combinedArray[1] = blindArray[1];
-            combinedArray[2] = blindArray[2];
-            combinedArray[3] = blindArray[3];
-        } else
-        {
-            combinedArray[0] = pickedArray[0] * guessingPower + blindArray[0] * (1 - guessingPower);
-            combinedArray[1] = pickedArray[1] * guessingPower + blindArray[1] * (1 - guessingPower);
-            combinedArray[2] = pickedArray[2] * guessingPower + blindArray[2] * (1 - guessingPower);
-            combinedArray[3] = pickedArray[3] * guessingPower + blindArray[3] * (1 - guessingPower);
-            if(combinedArray[0] > combinedArray[1])
-            {
-                combinedArray[0] -= combinedArray[1];
-                combinedArray[1] = 0;
-            } else if(combinedArray[0] < combinedArray[1])
-            {
-                combinedArray[1] -= combinedArray[0];
-                combinedArray[0] = 0;
-            } else
-            {
-                combinedArray[0] = 0;
-                combinedArray[1] = 0;
-            }
-        }
-        return combinedArray;
-    }
-
-    private double[] generateDiscountArray(int neighbors, double discount)
-    {
-        double[] discountArray = new double[neighbors * 2 + 1];
-        discountArray[neighbors] = 1;
-        if(discount < 0)
-        {
-            discount = 0;
-        } else if(discount > 1)
-        {
-            discount = 1;
-        }
-        for(int d = 1; d <= neighbors; d++)
-        {
-            discountArray[neighbors + d] = discountArray[neighbors + d - 1] * discount;
-            discountArray[neighbors - d] = discountArray[neighbors - d + 1] * discount;
-        }
-        return discountArray;
-    }
-
-    private List<double[]> averageAttitudesDisplayed(List<double[]> attitudes, double[] discountArray)
-    {
-        List<double[]> averagedAttitudesDisplayed = new ArrayList<>();
-        for(int round = 0; round < game.getNumRounds(); round++)
-        {
-            double[] avAttDisp = new double[4];
-            for(int d = 0; d < discountArray.length; d++)
-            {
-                int scanRound = round - discountArray.length / 2 + d;
-                if(scanRound >= 0 && scanRound < game.getNumRounds())
-                {
-                    avAttDisp[0] += discountArray[d] * attitudes.get(scanRound)[0];
-                    avAttDisp[1] += discountArray[d] * attitudes.get(scanRound)[1];
-                    avAttDisp[2] += discountArray[d] * attitudes.get(scanRound)[2];
-                    avAttDisp[3] += discountArray[d] * attitudes.get(scanRound)[3];
-                }
-            }
-            if(avAttDisp[0] > avAttDisp[1])
-            {
-                avAttDisp[0] -= avAttDisp[1];
-                avAttDisp[1] = 0;
-            } else if(avAttDisp[0] < avAttDisp[1])
-            {
-                avAttDisp[1] -= avAttDisp[0];
-                avAttDisp[0] = 0;
-            } else
-            {
-                avAttDisp[0] = 0;
-                avAttDisp[1] = 0;
-            }
-            averagedAttitudesDisplayed.add(avAttDisp);
-        }
-        return averagedAttitudesDisplayed;
-    }
-
-    private List<AttitudeVector> convertToAttitudeVectorList(List<double[]> unconvertedAVs)
-    {
-        List<AttitudeVector> convertedList = new ArrayList<>();
-        for(int i = 0; i < unconvertedAVs.size(); i++)
-        {
-            double[] unconv = unconvertedAVs.get(i);
-            convertedList.add(new AttitudeVector(unconv[0], unconv[1], unconv[2], unconv[3]));
-        }
-        return convertedList;
-    }
-
+//    private double calculateIntegrity(double prevIntegrity, int[] prevAction, List<int[]> message, int playerAct, boolean newMessage)
+//    {
+//        if(newMessage)
+//        {
+//            if(message.get(0)[0] == playerAct)
+//            {
+//                return 1;
+//            }
+//            return -1;
+//        } else if(prevIntegrity > 0)
+//        {
+//            if(message.size() > 1)
+//            {
+//                if(message.get(0)[0] == prevAction[0])
+//                {
+//                    if(message.get(1)[0] == playerAct)
+//                    {
+//                        return 1;
+//                    }
+//                    return 0;
+//                } else
+//                {
+//                    if(message.get(0)[0] == playerAct)
+//                    {
+//                        return 1;
+//                    }
+//                    return 0;
+//                }
+//            } else
+//            {
+//                if(message.get(0)[0] == playerAct)
+//                {
+//                    return 1;
+//                }
+//                return 0;
+//            }
+//        } else
+//        {
+//            return 0;
+//        }
+//    }
+//
+//    private double calculateDeference(double prevDeference, int[] prevAction, List<int[]> message, int playerAct, boolean newMessage)
+//    {
+//        if(newMessage)
+//        {
+//            if(message.get(0)[1] == playerAct)
+//            {
+//                return 1;
+//            }
+//            return -1;
+//        } else if(prevDeference > 0)
+//        {
+//            if(message.size() > 1)
+//            {
+//                if(message.get(0)[1] == prevAction[0])
+//                {
+//                    if(message.get(1)[1] == playerAct)
+//                    {
+//                        return 1;
+//                    }
+//                    return 0;
+//                } else
+//                {
+//                    if(message.get(0)[1] == playerAct)
+//                    {
+//                        return 1;
+//                    }
+//                    return 0;
+//                }
+//            } else
+//            {
+//                if(message.get(0)[1] == playerAct)
+//                {
+//                    return 1;
+//                }
+//                return 0;
+//            }
+//        } else
+//        {
+//            return 0;
+//        }
+//    }
+//
+//    private double[] generateAverageAttitude(int actTaken)
+//    {
+//        double[] attitudeArray = new double[4];
+//        for(int act = 0; act < game.getNumRowActions(); act++)
+//        {
+//            attitudeArray[0] += converter.getAttitudeVectorFromActionPair(actTaken, act).getGreedy(); //aMatrix[actTaken][act].getGreedy();
+//            attitudeArray[1] += converter.getAttitudeVectorFromActionPair(actTaken, act).getPlacate(); //aMatrix[actTaken][act].getPlacate();
+//            attitudeArray[2] += converter.getAttitudeVectorFromActionPair(actTaken, act).getCooperate(); //aMatrix[actTaken][act].getCooperate();
+//            attitudeArray[3] += converter.getAttitudeVectorFromActionPair(actTaken, act).getAbsurd(); //aMatrix[actTaken][act].getAbsurd();
+//        }
+//        if(attitudeArray[0] > attitudeArray[1])
+//        {
+//            attitudeArray[0] -= attitudeArray[1];
+//            attitudeArray[1] = 0;
+//        } else if(attitudeArray[0] < attitudeArray[1])
+//        {
+//            attitudeArray[1] -= attitudeArray[0];
+//            attitudeArray[0] = 0;
+//        } else
+//        {
+//            attitudeArray[0] = 0;
+//            attitudeArray[1] = 0;
+//        }
+//        double total = attitudeArray[0] + attitudeArray[1] + attitudeArray[2] + attitudeArray[3];
+//        attitudeArray[0] = attitudeArray[0] / total;
+//        attitudeArray[1] = attitudeArray[1] / total;
+//        attitudeArray[2] = attitudeArray[2] / total;
+//        attitudeArray[3] = attitudeArray[3] / total;
+//        return attitudeArray;
+//    }
+//
+//    private double[] generateAttitudeArray(int rowAct, int colAct)
+//    {
+//        AttitudeVector aV = new AttitudeVector(converter.getAttitudeVectorFromActionPair(rowAct, colAct)); //(aMatrix[rowAct][colAct]);
+//        double[] attitudeArray = new double[4];attitudeArray[0] = aV.getGreedy();
+//        attitudeArray[0] = aV.getGreedy();
+//        attitudeArray[1] = aV.getPlacate();
+//        attitudeArray[2] = aV.getCooperate();
+//        attitudeArray[3] = aV.getAbsurd();
+//         return attitudeArray;
+//    }
+//
+//    private double[] combineAttitudeArrays(double[] pickedArray, double[] blindArray, double guessingPower)
+//    {
+//        double[] combinedArray = new double[4];
+//        if(guessingPower >= 1)
+//        {
+//            combinedArray[0] = pickedArray[0];
+//            combinedArray[1] = pickedArray[1];
+//            combinedArray[2] = pickedArray[2];
+//            combinedArray[3] = pickedArray[3];
+//        } else if(guessingPower <= 0)
+//        {
+//            combinedArray[0] = blindArray[0];
+//            combinedArray[1] = blindArray[1];
+//            combinedArray[2] = blindArray[2];
+//            combinedArray[3] = blindArray[3];
+//        } else
+//        {
+//            combinedArray[0] = pickedArray[0] * guessingPower + blindArray[0] * (1 - guessingPower);
+//            combinedArray[1] = pickedArray[1] * guessingPower + blindArray[1] * (1 - guessingPower);
+//            combinedArray[2] = pickedArray[2] * guessingPower + blindArray[2] * (1 - guessingPower);
+//            combinedArray[3] = pickedArray[3] * guessingPower + blindArray[3] * (1 - guessingPower);
+//            if(combinedArray[0] > combinedArray[1])
+//            {
+//                combinedArray[0] -= combinedArray[1];
+//                combinedArray[1] = 0;
+//            } else if(combinedArray[0] < combinedArray[1])
+//            {
+//                combinedArray[1] -= combinedArray[0];
+//                combinedArray[0] = 0;
+//            } else
+//            {
+//                combinedArray[0] = 0;
+//                combinedArray[1] = 0;
+//            }
+//        }
+//        return combinedArray;
+//    }
+//
+//    private double[] generateDiscountArray(int neighbors, double discount)
+//    {
+//        double[] discountArray = new double[neighbors * 2 + 1];
+//        discountArray[neighbors] = 1;
+//        if(discount < 0)
+//        {
+//            discount = 0;
+//        } else if(discount > 1)
+//        {
+//            discount = 1;
+//        }
+//        for(int d = 1; d <= neighbors; d++)
+//        {
+//            discountArray[neighbors + d] = discountArray[neighbors + d - 1] * discount;
+//            discountArray[neighbors - d] = discountArray[neighbors - d + 1] * discount;
+//        }
+//        return discountArray;
+//    }
+//
+//    private List<double[]> averageAttitudesDisplayed(List<double[]> attitudes, double[] discountArray)
+//    {
+//        List<double[]> averagedAttitudesDisplayed = new ArrayList<>();
+//        for(int round = 0; round < game.getNumRounds(); round++)
+//        {
+//            double[] avAttDisp = new double[4];
+//            for(int d = 0; d < discountArray.length; d++)
+//            {
+//                int scanRound = round - discountArray.length / 2 + d;
+//                if(scanRound >= 0 && scanRound < game.getNumRounds())
+//                {
+//                    avAttDisp[0] += discountArray[d] * attitudes.get(scanRound)[0];
+//                    avAttDisp[1] += discountArray[d] * attitudes.get(scanRound)[1];
+//                    avAttDisp[2] += discountArray[d] * attitudes.get(scanRound)[2];
+//                    avAttDisp[3] += discountArray[d] * attitudes.get(scanRound)[3];
+//                }
+//            }
+//            if(avAttDisp[0] > avAttDisp[1])
+//            {
+//                avAttDisp[0] -= avAttDisp[1];
+//                avAttDisp[1] = 0;
+//            } else if(avAttDisp[0] < avAttDisp[1])
+//            {
+//                avAttDisp[1] -= avAttDisp[0];
+//                avAttDisp[0] = 0;
+//            } else
+//            {
+//                avAttDisp[0] = 0;
+//                avAttDisp[1] = 0;
+//            }
+//            averagedAttitudesDisplayed.add(avAttDisp);
+//        }
+//        return averagedAttitudesDisplayed;
+//    }
+//
+//    private List<AttitudeVector> convertToAttitudeVectorList(List<double[]> unconvertedAVs)
+//    {
+//        List<AttitudeVector> convertedList = new ArrayList<>();
+//        for(int i = 0; i < unconvertedAVs.size(); i++)
+//        {
+//            double[] unconv = unconvertedAVs.get(i);
+//            convertedList.add(new AttitudeVector(unconv[0], unconv[1], unconv[2], unconv[3]));
+//        }
+//        return convertedList;
+//    }
+//
 //    private double[] calculatePositiveIntegrity(int[] prevAction, List<int[]> message)
 //    {
 //        double[] intendedAttitude = new double[4];
@@ -829,12 +721,12 @@ public class GameToFeatureList
 //        intendedAttitude[3] = aMatrix[intendedActionPair[0]][intendedActionPair[1]].getAbsurd();
 //        return intendedAttitude;
 //    }
-
-    private AttitudeVector convertToAttitudeVector(double[] unconverted)
-    {
-        return new AttitudeVector(unconverted[0], unconverted[1], unconverted[2], unconverted[3]);
-    }
-
+//
+//    private AttitudeVector convertToAttitudeVector(double[] unconverted)
+//    {
+//        return new AttitudeVector(unconverted[0], unconverted[1], unconverted[2], unconverted[3]);
+//    }
+//
 //    private double[] mergeActionPairs(int[] actPair1, int[] actPair2)
 //    {
 //        double[] mergedAttitude = new double[4];

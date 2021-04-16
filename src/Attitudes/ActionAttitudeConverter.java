@@ -155,6 +155,8 @@ public class ActionAttitudeConverter
         int cols = pMatrix.getNumCols();
         highestPayoff = Double.MIN_VALUE;
         highestOtherPayoff = Double.MIN_VALUE;
+        double lowestPayoff = Double.MAX_VALUE;
+        double lowestOtherPayoff = Double.MAX_VALUE;
         highestCombinedPayoff = Double.MIN_VALUE;
         lowestCombinedPayoff = Double.MAX_VALUE;
         List<int[]> greedyPairs = new ArrayList<>();
@@ -190,6 +192,14 @@ public class ActionAttitudeConverter
                     p[0] = r;
                     p[1] = c;
                     placatePairs.add(p);
+                }
+                if(playerValue < lowestPayoff)
+                {
+                    lowestPayoff = playerValue;
+                }
+                if(otherValue < lowestOtherPayoff)
+                {
+                    lowestOtherPayoff = otherValue;
                 }
                 if((playerValue + otherValue) > highestCombinedPayoff)
                 {
@@ -227,6 +237,7 @@ public class ActionAttitudeConverter
         absurdCoords[0] = lowestCombinedPayoff / 2;
         absurdCoords[1] = lowestCombinedPayoff / 2;
         generateAttitudeMatrix(pMatrix, highestPayoff, highestOtherPayoff,
+                lowestPayoff, lowestOtherPayoff,
                 highestCombinedPayoff, lowestCombinedPayoff, greedyCoords, placateCoords, cooperateCoords,
                 absurdCoords);
     }
@@ -244,32 +255,40 @@ public class ActionAttitudeConverter
                 avSplitVals[r][c][1] = avMatrix[r][c].getPlacate();
                 avSplitVals[r][c][2] = avMatrix[r][c].getCooperate();
                 avSplitVals[r][c][3] = avMatrix[r][c].getAbsurd();
-                avSplitRowVals[r][0] += avMatrix[r][c].getGreedy();
-                avSplitRowVals[r][1] += avMatrix[r][c].getPlacate();
-                avSplitRowVals[r][2] += avMatrix[r][c].getCooperate();
-                avSplitRowVals[r][3] += avMatrix[r][c].getAbsurd();
+                avSplitRowVals[r][0] += avMatrix[r][c].getGreedy() / ((double) avMatrix[r].length);
+                avSplitRowVals[r][1] += avMatrix[r][c].getPlacate() / ((double) avMatrix[r].length);
+                avSplitRowVals[r][2] += avMatrix[r][c].getCooperate() / ((double) avMatrix[r].length);
+                avSplitRowVals[r][3] += avMatrix[r][c].getAbsurd() / ((double) avMatrix[r].length);
             }
         }
-        for(int r = 0; r < avSplitRowVals.length; r++)
-        {
-            if(avSplitRowVals[r][0] > avSplitRowVals[r][1])
-            {
-                avSplitRowVals[r][0] -= avSplitRowVals[r][1];
-                avSplitRowVals[r][1] = 0;
-            } else if(avSplitRowVals[r][0] < avSplitRowVals[r][1])
-            {
-                avSplitRowVals[r][1] -= avSplitRowVals[r][0];
-                avSplitRowVals[r][0] = 0;
-            } else
-            {
-                avSplitRowVals[r][0] = 0;
-                avSplitRowVals[r][1] = 0;
-            }
-        }
+//        for(int r = 0; r < avSplitRowVals.length; r++)
+//        {
+//            if(avSplitRowVals[r][0] > avSplitRowVals[r][1])
+//            {
+//                avSplitRowVals[r][0] -= avSplitRowVals[r][1];
+//                avSplitRowVals[r][1] = 0;
+//            } else if(avSplitRowVals[r][0] < avSplitRowVals[r][1])
+//            {
+//                avSplitRowVals[r][1] -= avSplitRowVals[r][0];
+//                avSplitRowVals[r][0] = 0;
+//            } else
+//            {
+//                avSplitRowVals[r][0] = 0;
+//                avSplitRowVals[r][1] = 0;
+//            }
+//        }
         for(int r = 0; r < avPredMatrix.length; r++)
         {
             for(int c = 0; c < avPredMatrix[r].length; c++)
             {
+//                AttitudeVector aVSV = new AttitudeVector(pPower * avSplitVals[r][c][0],
+//                        pPower * avSplitVals[r][c][1],
+//                        pPower * avSplitVals[r][c][2],
+//                        pPower * avSplitVals[r][c][3]);
+//                AttitudeVector aVSRV = new AttitudeVector((1 - pPower) * avSplitRowVals[r][0],
+//                        (1 - pPower) * avSplitRowVals[r][1],
+//                        (1 - pPower) * avSplitRowVals[r][2],
+//                        (1 - pPower) * avSplitRowVals[r][3]);
                 double greed = pPower * avSplitVals[r][c][0] + (1 - pPower) * avSplitRowVals[r][0];
                 double plac = pPower * avSplitVals[r][c][1] + (1 - pPower) * avSplitRowVals[r][1];
                 double coop = pPower * avSplitVals[r][c][2] + (1 - pPower) * avSplitRowVals[r][2];
@@ -292,9 +311,7 @@ public class ActionAttitudeConverter
                     for(int c2 = 0; c2 < combinedAVMatrix[r1][c1][r2].length; c2++)
                     {
                         AttitudeVector av2 = avMatrix[r2][c2];
-                        combinedAVMatrix[r1][c1][r2][c2] = new AttitudeVector(av1.getGreedy() + av2.getGreedy(),
-                                av1.getPlacate() + av2.getPlacate(), av1.getCooperate() + av2.getCooperate(),
-                                av1.getAbsurd() + av2.getAbsurd());
+                        combinedAVMatrix[r1][c1][r2][c2] = AttitudeVector.average(av1, av2);
                     }
                 }
             }
@@ -350,7 +367,8 @@ public class ActionAttitudeConverter
      * @param absurdCoords Coordinates of the most absurd values
      */
     private void generateAttitudeMatrix(PayoffMatrix pMatrix, double highestPayoff,
-                                        double highestOtherPayoff, double highestCombinedPayoff,
+                                        double highestOtherPayoff, double lowestPayoff,
+                                        double lowestOtherPayoff, double highestCombinedPayoff,
                                         double lowestCombinedPayoff, double[] greedyCoords,
                                         double[] placateCoords, double[] cooperateCoords,
                                         double[] absurdCoords)
@@ -367,76 +385,92 @@ public class ActionAttitudeConverter
                 boolean added = false;
                 double value = pMatrix.getRowPlayerValue(r, c);
                 double otherValue = pMatrix.getColPlayerValue(r, c);
-                if(!(value == highestPayoff && otherValue == highestOtherPayoff))
+                double combinedValue = value + otherValue;
+                if(value > otherValue)
                 {
-                    if(value == highestPayoff)
-                    {
-                        tempAtVec[0] = 1;
-                        added = true;
-                    }
-                    if(otherValue == highestOtherPayoff)
-                    {
-                        tempAtVec[1] = 1;
-                        added = true;
-                    }
-                }
-                if((value + otherValue) == highestCombinedPayoff)
+                    tempAtVec[0] = (value - lowestPayoff) / (highestPayoff - lowestPayoff);
+                } else if(otherValue > value)
                 {
-                    tempAtVec[2] = 1;
-                    added = true;
+                    tempAtVec[1] = (otherValue - lowestOtherPayoff) / (highestOtherPayoff - lowestOtherPayoff);
                 }
-                if((value + otherValue) == lowestCombinedPayoff)
+                double middleCombinedPayoff = (highestCombinedPayoff + lowestCombinedPayoff) / 2;
+                if(combinedValue > middleCombinedPayoff)
                 {
-                    tempAtVec[3] = 1;
-                    added = true;
-                }
-                // If no pure attitudes are demonstrated by the joint action,
-                // determine what percent of each attitude is displayed
-                if(!added)
+                    tempAtVec[2] = (combinedValue - middleCombinedPayoff) / (highestCombinedPayoff - middleCombinedPayoff);
+                } else if(combinedValue < middleCombinedPayoff)
                 {
-                    double distGreedy = highestPayoff - pMatrix.getRowPlayerValue(r, c);
-                    double distPlacate = highestOtherPayoff - pMatrix.getColPlayerValue(r, c);
-
-                    if(distGreedy < distPlacate)
-                    {
-                        double[] intersection = calculateIntersection(greedyCoords[0], greedyCoords[1],
-                                cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
-                                absurdCoords[1], pMatrix.getRowPlayerValue(r, c), pMatrix.getColPlayerValue(r, c));
-                        double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
-                        double absurdValue = pMatrix.getRowPlayerValue(r, c) + pMatrix.getColPlayerValue(r,c)
-                                - lowestCombinedPayoff;
-                        double percentAbsurd = 1.0 - absurdValue / absurdDist;
-                        double greedyDist = highestPayoff - highestCombinedPayoff / 2;
-                        double greedyValue = intersection[0] - highestCombinedPayoff / 2;
-                        double greedyPercent = greedyValue / greedyDist;
-                        tempAtVec[0] = greedyPercent;
-                        tempAtVec[2] = 1.0 - greedyPercent;
-                        tempAtVec[3] = percentAbsurd;
-                    } else if(distGreedy > distPlacate)
-                    {
-                        double[] intersection = calculateIntersection(placateCoords[0], placateCoords[1],
-                                cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
-                                absurdCoords[1], pMatrix.getRowPlayerValue(r, c), pMatrix.getColPlayerValue(r, c));
-                        double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
-                        double absurdValue = pMatrix.getRowPlayerValue(r, c) + pMatrix.getColPlayerValue(r,c)
-                                - lowestCombinedPayoff;
-                        double percentAbsurd = 1.0 - absurdValue / absurdDist;
-                        double placateDist = highestOtherPayoff - highestCombinedPayoff / 2;
-                        double placateValue = intersection[1] - highestCombinedPayoff / 2;
-                        double placatePercent = placateValue / placateDist;
-                        tempAtVec[1] = placatePercent;
-                        tempAtVec[2] = 1.0 - placatePercent;
-                        tempAtVec[3] = percentAbsurd;
-                    } else
-                    {
-                        double combinedDistance = highestCombinedPayoff - lowestCombinedPayoff;
-                        double combinedValue = pMatrix.getRowPlayerValue(r, c)
-                                + pMatrix.getColPlayerValue(r, c) - lowestCombinedPayoff;
-                        double percentCooperative = combinedValue / combinedDistance;
-                        tempAtVec[2] = percentCooperative;
-                        tempAtVec[3] = 1 - percentCooperative;
-                    }
+                    tempAtVec[3] = (middleCombinedPayoff - combinedValue) / (middleCombinedPayoff - lowestCombinedPayoff);
                 }
+//                if(!(value == highestPayoff && otherValue == highestOtherPayoff))
+//                {
+//                    if(value == highestPayoff)
+//                    {
+//                        tempAtVec[0] = 1;
+//                        added = true;
+//                    }
+//                    if(otherValue == highestOtherPayoff)
+//                    {
+//                        tempAtVec[1] = 1;
+//                        added = true;
+//                    }
+//                }
+//                if((value + otherValue) == highestCombinedPayoff)
+//                {
+//                    tempAtVec[2] = 1;
+//                    added = true;
+//                }
+//                if((value + otherValue) == lowestCombinedPayoff)
+//                {
+//                    tempAtVec[3] = 1;
+//                    added = true;
+//                }
+//                // If no pure attitudes are demonstrated by the joint action,
+//                // determine what percent of each attitude is displayed
+//                if(!added)
+//                {
+//                    double distGreedy = highestPayoff - pMatrix.getRowPlayerValue(r, c);
+//                    double distPlacate = highestOtherPayoff - pMatrix.getColPlayerValue(r, c);
+//
+//                    if(distGreedy < distPlacate)
+//                    {
+//                        double[] intersection = calculateIntersection(greedyCoords[0], greedyCoords[1],
+//                                cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
+//                                absurdCoords[1], pMatrix.getRowPlayerValue(r, c), pMatrix.getColPlayerValue(r, c));
+//                        double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
+//                        double absurdValue = pMatrix.getRowPlayerValue(r, c) + pMatrix.getColPlayerValue(r,c)
+//                                - lowestCombinedPayoff;
+//                        double percentAbsurd = 1.0 - absurdValue / absurdDist;
+//                        double greedyDist = highestPayoff - highestCombinedPayoff / 2;
+//                        double greedyValue = intersection[0] - highestCombinedPayoff / 2;
+//                        double greedyPercent = greedyValue / greedyDist;
+//                        tempAtVec[0] = greedyPercent;
+//                        tempAtVec[2] = 1.0 - greedyPercent;
+//                        tempAtVec[3] = percentAbsurd;
+//                    } else if(distGreedy > distPlacate)
+//                    {
+//                        double[] intersection = calculateIntersection(placateCoords[0], placateCoords[1],
+//                                cooperateCoords[0], cooperateCoords[1], absurdCoords[0],
+//                                absurdCoords[1], pMatrix.getRowPlayerValue(r, c), pMatrix.getColPlayerValue(r, c));
+//                        double absurdDist = intersection[0] + intersection[1] - lowestCombinedPayoff;
+//                        double absurdValue = pMatrix.getRowPlayerValue(r, c) + pMatrix.getColPlayerValue(r,c)
+//                                - lowestCombinedPayoff;
+//                        double percentAbsurd = 1.0 - absurdValue / absurdDist;
+//                        double placateDist = highestOtherPayoff - highestCombinedPayoff / 2;
+//                        double placateValue = intersection[1] - highestCombinedPayoff / 2;
+//                        double placatePercent = placateValue / placateDist;
+//                        tempAtVec[1] = placatePercent;
+//                        tempAtVec[2] = 1.0 - placatePercent;
+//                        tempAtVec[3] = percentAbsurd;
+//                    } else
+//                    {
+//                        double combinedDistance = highestCombinedPayoff - lowestCombinedPayoff;
+//                        double combinedValue = pMatrix.getRowPlayerValue(r, c)
+//                                + pMatrix.getColPlayerValue(r, c) - lowestCombinedPayoff;
+//                        double percentCooperative = combinedValue / combinedDistance;
+//                        tempAtVec[2] = percentCooperative;
+//                        tempAtVec[3] = 1 - percentCooperative;
+//                    }
+//                }
                 avMatrix[r][c] = new AttitudeVector(tempAtVec[0],
                         tempAtVec[1], tempAtVec[2], tempAtVec[3]);
             }

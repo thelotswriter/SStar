@@ -1,7 +1,6 @@
 package StrategyAutomata;
 
 import Attitudes.ActionAttitudeConverter;
-import Attitudes.Attitude;
 import Attitudes.AttitudeVector;
 import Clustering.DistantDataCluster;
 import Clustering.FeatList2DSAttVecClustList;
@@ -16,13 +15,12 @@ import Game.TXTtoGame;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 
-public class MegaAutomatonTest
+public class SplitAutomataTest
 {
 
     // Get files and separate into training and test
@@ -69,57 +67,101 @@ public class MegaAutomatonTest
     private double pPower = 1.0;
     private double discount = 0.0;
     private int memoryLength = 4;
+    private int nTrees;
 
-    public MegaAutomatonTest(double percentTraining)
+    public SplitAutomataTest(double percentTraining, int memory, int trees)
     {
+        memoryLength = memory;
+        nTrees = trees;
         initialize(percentTraining);
     }
 
     private void initialize(double percentTraining)
     {
-        System.out.println("What predictive power?");
-        Scanner keys = new Scanner(System.in);
-        pPower = keys.nextDouble();
-        if(pPower > 1)
+//        System.out.println("What predictive power?");
+//        Scanner keys = new Scanner(System.in);
+        boolean chooseAlt = false;
+        pPower = 1;
+        if(!chooseAlt)
         {
-            pPower = 1;
-        } else if(pPower < 0)
-        {
-            pPower = 0;
+            File folder = new File(dir);
+            List<File> altFileList = new ArrayList<>();
+            List<File> chickenFileList = new ArrayList<>();
+            List<File> prisonFileList = new ArrayList<>();
+            for(File file : folder.listFiles())
+            {
+                if(file.getPath().contains("blocks"))
+                {
+                    altFileList.add(file);
+                } else if(file.getPath().contains("chicken"))
+                {
+                    chickenFileList.add(file);
+                } else if(file.getPath().contains("prisoners"))
+                {
+                    prisonFileList.add(file);
+                }
+            }
+            altFiles = new File[altFileList.size()];
+            chickenFiles = new File[chickenFileList.size()];
+            prisonFiles = new File[prisonFileList.size()];
+            for(int f = 0; f < altFileList.size(); f++)
+            {
+                altFiles[f] = altFileList.get(f);
+            }
+            for(int f = 0; f < chickenFileList.size(); f++)
+            {
+                chickenFiles[f] = chickenFileList.get(f);
+            }
+            for(int f = 0; f < prisonFileList.size(); f++)
+            {
+                prisonFiles[f] = prisonFileList.get(f);
+            }
         }
-        System.out.println("Select Alternator Games");
-        JFileChooser altFileChooser = new JFileChooser(dir);
-        altFileChooser.setMultiSelectionEnabled(true);
-        FileNameExtensionFilter altFilter = new FileNameExtensionFilter("TXT Files", "txt");
-        AltFileFilter altNameFilter = new AltFileFilter();
-        altFileChooser.setFileFilter(altFilter);
-        altFileChooser.setFileFilter(altNameFilter);
-        altFileChooser.showOpenDialog(null);
-        altFiles = altFileChooser.getSelectedFiles();
-        System.out.println("Select Chicken Games");
-        JFileChooser chickenFileChooser = new JFileChooser(dir);
-        chickenFileChooser.setMultiSelectionEnabled(true);
-        FileNameExtensionFilter chickenFilter = new FileNameExtensionFilter("TXT Files", "txt");
-        ChickenFileFilter chickenNameFilter = new ChickenFileFilter();
-        chickenFileChooser.setFileFilter(chickenFilter);
-        chickenFileChooser.setFileFilter(chickenNameFilter);
-        chickenFileChooser.showOpenDialog(null);
-        chickenFiles = chickenFileChooser.getSelectedFiles();
-        System.out.println("Select Prisoner's Dilemma Games");
-        JFileChooser prisonFileChooser = new JFileChooser(dir);
-        prisonFileChooser.setMultiSelectionEnabled(true);
-        FileNameExtensionFilter prisonFilter = new FileNameExtensionFilter("TXT Files", "txt");
-        PrisonFileFilter prisonNameFilter = new PrisonFileFilter();
-        prisonFileChooser.setFileFilter(prisonFilter);
-        prisonFileChooser.setFileFilter(prisonNameFilter);
-        prisonFileChooser.showOpenDialog(null);
-        prisonFiles = prisonFileChooser.getSelectedFiles();
+//        if(pPower > 1)
+//        {
+//            pPower = 1;
+//        } else if(pPower < 0)
+//        {
+//            pPower = 0;
+//        }
+
+        if(chooseAlt)
+        {
+            System.out.println("Select Alternator Games");
+            JFileChooser altFileChooser = new JFileChooser(dir);
+            altFileChooser.setMultiSelectionEnabled(true);
+            FileNameExtensionFilter altFilter = new FileNameExtensionFilter("TXT Files", "txt");
+            AltFileFilter altNameFilter = new AltFileFilter();
+            altFileChooser.setFileFilter(altFilter);
+            altFileChooser.setFileFilter(altNameFilter);
+            altFileChooser.showOpenDialog(null);
+            altFiles = altFileChooser.getSelectedFiles();
+            System.out.println("Select Chicken Games");
+            JFileChooser chickenFileChooser = new JFileChooser(dir);
+            chickenFileChooser.setMultiSelectionEnabled(true);
+            FileNameExtensionFilter chickenFilter = new FileNameExtensionFilter("TXT Files", "txt");
+            ChickenFileFilter chickenNameFilter = new ChickenFileFilter();
+            chickenFileChooser.setFileFilter(chickenFilter);
+            chickenFileChooser.setFileFilter(chickenNameFilter);
+            chickenFileChooser.showOpenDialog(null);
+            chickenFiles = chickenFileChooser.getSelectedFiles();
+            System.out.println("Select Prisoner's Dilemma Games");
+            JFileChooser prisonFileChooser = new JFileChooser(dir);
+            prisonFileChooser.setMultiSelectionEnabled(true);
+            FileNameExtensionFilter prisonFilter = new FileNameExtensionFilter("TXT Files", "txt");
+            PrisonFileFilter prisonNameFilter = new PrisonFileFilter();
+            prisonFileChooser.setFileFilter(prisonFilter);
+            prisonFileChooser.setFileFilter(prisonNameFilter);
+            prisonFileChooser.showOpenDialog(null);
+            prisonFiles = prisonFileChooser.getSelectedFiles();
+        }
         TXTtoGame txtToGame = new TXTtoGame();
         altGames = new Game[altFiles.length / 2];
         chickenGames = new Game[chickenFiles.length / 2];
         prisonGames = new Game[prisonFiles.length / 2];
         for(int g = 0; g < altGames.length; g++)
         {
+//            System.out.println(g);
             altGames[g] = txtToGame.openFile(altFiles[2 * g].getPath(), altFiles[2 * g + 1].getPath());
         }
         for(int g = 0; g < chickenGames.length; g++)
@@ -314,7 +356,7 @@ public class MegaAutomatonTest
      * All Games
      * @return The described matrix. First index is the predictor, second is what game it's applied to
      */
-    public void run()
+    public double[][] run(int fileNum, boolean verbose)
     {
         //=========Convert feature lists to cluster lists
         FeatList2DSAttVecClustList fl2dsavcl = FeatList2DSAttVecClustList.getInstance();
@@ -351,21 +393,6 @@ public class MegaAutomatonTest
         DSGeneralAutomaton altPrisonAutomaton = new DSGeneralAutomaton(memoryLength, dispAVs, saidAVs);
         DSGeneralAutomaton chickenPrisonAutomaton = new DSGeneralAutomaton(memoryLength, dispAVs, saidAVs);
         DSGeneralAutomaton combinedAutomaton = new DSGeneralAutomaton(memoryLength, dispAVs, saidAVs);
-        int minSecond = 2;
-        System.out.print("Alt Decision Points: ");
-        System.out.println(altAutomaton.calculateDecisionPoints(minSecond));
-        System.out.print("Chicken Decision Points: ");
-        System.out.println(chickenAutomaton.calculateDecisionPoints(minSecond));
-        System.out.print("Prison Decision Points: ");
-        System.out.println(prisonAutomaton.calculateDecisionPoints(minSecond));
-        System.out.print("Alt+Chick Decision Points: ");
-        System.out.println(altChickenAutomaton.calculateDecisionPoints(minSecond));
-        System.out.print("Alt+PD Decision Points: ");
-        System.out.println(altPrisonAutomaton.calculateDecisionPoints(minSecond));
-        System.out.print("Chick+PD Decision Points: ");
-        System.out.println(chickenPrisonAutomaton.calculateDecisionPoints(minSecond));
-        System.out.print("Combined Decision Points: ");
-        System.out.println(combinedAutomaton.calculateDecisionPoints(minSecond));
         for(List<Feature> featureList : altTrainFeatureCollection)
         {
 //            List<Feature> featureList = new ArrayList<>();
@@ -445,11 +472,58 @@ public class MegaAutomatonTest
             chickenPrisonTestClustLists.add(clustIndexList);
             combinedTestClustLists.add(clustIndexList);
         }
-//        DSGeneralAutomaton extractedAlt = altAutomaton.extractAutomaton();
+        int minSecond = 2;
+//        System.out.print("Alt Decision Points: ");
+//        System.out.println(altAutomaton.calculateDecisionPoints(minSecond));
+//        System.out.print("Chicken Decision Points: ");
+//        System.out.println(chickenAutomaton.calculateDecisionPoints(minSecond));
+//        System.out.print("Prison Decision Points: ");
+//        System.out.println(prisonAutomaton.calculateDecisionPoints(minSecond));
+//        System.out.print("Alt+Chick Decision Points: ");
+//        System.out.println(altChickenAutomaton.calculateDecisionPoints(minSecond));
+//        System.out.print("Alt+PD Decision Points: ");
+//        System.out.println(altPrisonAutomaton.calculateDecisionPoints(minSecond));
+//        System.out.print("Chick+PD Decision Points: ");
+//        System.out.println(chickenPrisonAutomaton.calculateDecisionPoints(minSecond));
+//        System.out.print("Combined Decision Points: ");
+//        System.out.println(combinedAutomaton.calculateDecisionPoints(minSecond));
+        int splitNum = 10;
+        AutomataGroup altAutomata = new AutomataGroup(splitNum, altAutomaton);
+        AutomataGroup chickenAutomata = new AutomataGroup(splitNum, chickenAutomaton);
+        AutomataGroup prisonAutomata = new AutomataGroup(splitNum, prisonAutomaton);
+        AutomataGroup altChickenAutomata = new AutomataGroup(splitNum, altChickenAutomaton);
+        AutomataGroup altPrisonAutomata = new AutomataGroup(splitNum, altPrisonAutomaton);
+        AutomataGroup chickenPrisonAutomata = new AutomataGroup(splitNum, chickenPrisonAutomaton);
+        AutomataGroup combinedAutomata = new AutomataGroup(splitNum, combinedAutomaton);
+//        System.out.println("Alt Group Decision Point Numberss: ");
+//        System.out.println(altAutomata.numDecisionPointsString(minSecond));
+//        System.out.println("Chicken Group Decision Point Numberss: ");
+//        System.out.println(chickenAutomata.numDecisionPointsString(minSecond));
+//        System.out.println("Prison Group Decision Point Numberss: ");
+//        System.out.println(prisonAutomata.numDecisionPointsString(minSecond));
+//        System.out.println("Alt+Chick Group Decision Point Numberss: ");
+//        System.out.println(altChickenAutomata.numDecisionPointsString(minSecond));
+//        System.out.println("Alt+PD Group Decision Point Numberss: ");
+//        System.out.println(altPrisonAutomata.numDecisionPointsString(minSecond));
+//        System.out.println("Chick+PD Group Decision Point Numberss: ");
+//        System.out.println(chickenPrisonAutomata.numDecisionPointsString(minSecond));
+//        System.out.println("Combined Group Decision Point Numberss: ");
+//        System.out.println(combinedAutomata.numDecisionPointsString(minSecond));
+//        DSGeneralAutomaton splitAlt = altAutomaton.extractAutomaton();
+//        DSGeneralAutomaton splitChicken = chickenAutomaton.extractAutomaton();
+//        DSGeneralAutomaton splitPrison = prisonAutomaton.extractAutomaton();
 //        System.out.print("Remaining alt observations: ");
 //        System.out.println(altAutomaton.getTotalCount());
 //        System.out.print("Extracted alt observations: ");
-//        System.out.println(extractedAlt.getTotalCount());
+//        System.out.println(splitAlt.getTotalCount());
+//        System.out.print("Remaining chicken observations: ");
+//        System.out.println(chickenAutomaton.getTotalCount());
+//        System.out.print("Extracted chicken observations: ");
+//        System.out.println(splitChicken.getTotalCount());
+//        System.out.print("Remaining pd observations: ");
+//        System.out.println(prisonAutomaton.getTotalCount());
+//        System.out.print("Extracted pd observations: ");
+//        System.out.println(splitPrison.getTotalCount());
         // Test predictions
         List<List<Feature>> altChickenTestFeatureCollection = new ArrayList<>();
         List<List<Feature>> altPrisonTestFeatureCollection = new ArrayList<>();
@@ -478,169 +552,187 @@ public class MegaAutomatonTest
         combinedTrainFeatureCollection.addAll(chickenTrainFeatureCollection);
         combinedTestFeatureCollection.addAll(prisonTrainFeatureCollection);
         double[][] resultMatrix = new double[7][14];
-        resultMatrix[0][0] = calculatePrecitionAccuracy(altAutomaton, altTestClustLists);
-        resultMatrix[0][1] = calculatePrecitionAccuracy(altAutomaton, chickenTestClustLists);
-        resultMatrix[0][2] = calculatePrecitionAccuracy(altAutomaton, prisonTestClustLists);
-        resultMatrix[0][3] = calculatePrecitionAccuracy(altAutomaton, altChickenTestClustLists);
-        resultMatrix[0][4] = calculatePrecitionAccuracy(altAutomaton, altPrisonTestClustLists);
-        resultMatrix[0][5] = calculatePrecitionAccuracy(altAutomaton, chickenPrisonTestClustLists);
-        resultMatrix[0][6] = calculatePrecitionAccuracy(altAutomaton, combinedTestClustLists);
-        resultMatrix[0][7] = calculatePrecitionAccuracy(altAutomaton, altTrainClustLists);
-        resultMatrix[0][8] = calculatePrecitionAccuracy(altAutomaton, chickenTrainClustLists);
-        resultMatrix[0][9] = calculatePrecitionAccuracy(altAutomaton, prisonTrainClustLists);
-        resultMatrix[0][10] = calculatePrecitionAccuracy(altAutomaton, altChickenTrainClustLists);
-        resultMatrix[0][11] = calculatePrecitionAccuracy(altAutomaton, altPrisonTrainClustLists);
-        resultMatrix[0][12] = calculatePrecitionAccuracy(altAutomaton, chickenPrisonTrainClustLists);
-        resultMatrix[0][13] = calculatePrecitionAccuracy(altAutomaton, combinedTrainClustLists);
-        resultMatrix[1][0] = calculatePrecitionAccuracy(chickenAutomaton, altTestClustLists);
-        resultMatrix[1][1] = calculatePrecitionAccuracy(chickenAutomaton, chickenTestClustLists);
-        resultMatrix[1][2] = calculatePrecitionAccuracy(chickenAutomaton, prisonTestClustLists);
-        resultMatrix[1][3] = calculatePrecitionAccuracy(chickenAutomaton, altChickenTestClustLists);
-        resultMatrix[1][4] = calculatePrecitionAccuracy(chickenAutomaton, altPrisonTestClustLists);
-        resultMatrix[1][5] = calculatePrecitionAccuracy(chickenAutomaton, chickenPrisonTestClustLists);
-        resultMatrix[1][6] = calculatePrecitionAccuracy(chickenAutomaton, combinedTestClustLists);
-        resultMatrix[1][7] = calculatePrecitionAccuracy(chickenAutomaton, altTrainClustLists);
-        resultMatrix[1][8] = calculatePrecitionAccuracy(chickenAutomaton, chickenTrainClustLists);
-        resultMatrix[1][9] = calculatePrecitionAccuracy(chickenAutomaton, prisonTrainClustLists);
-        resultMatrix[1][10] = calculatePrecitionAccuracy(chickenAutomaton, altChickenTrainClustLists);
-        resultMatrix[1][11] = calculatePrecitionAccuracy(chickenAutomaton, altPrisonTrainClustLists);
-        resultMatrix[1][12] = calculatePrecitionAccuracy(chickenAutomaton, chickenPrisonTrainClustLists);
-        resultMatrix[1][13] = calculatePrecitionAccuracy(chickenAutomaton, combinedTrainClustLists);
-        resultMatrix[2][0] = calculatePrecitionAccuracy(prisonAutomaton, altTestClustLists);
-        resultMatrix[2][1] = calculatePrecitionAccuracy(prisonAutomaton, chickenTestClustLists);
-        resultMatrix[2][2] = calculatePrecitionAccuracy(prisonAutomaton, prisonTestClustLists);
-        resultMatrix[2][3] = calculatePrecitionAccuracy(prisonAutomaton, altChickenTestClustLists);
-        resultMatrix[2][4] = calculatePrecitionAccuracy(prisonAutomaton, altPrisonTestClustLists);
-        resultMatrix[2][5] = calculatePrecitionAccuracy(prisonAutomaton, chickenPrisonTestClustLists);
-        resultMatrix[2][6] = calculatePrecitionAccuracy(prisonAutomaton, combinedTestClustLists);
-        resultMatrix[2][7] = calculatePrecitionAccuracy(prisonAutomaton, altTrainClustLists);
-        resultMatrix[2][8] = calculatePrecitionAccuracy(prisonAutomaton, chickenTrainClustLists);
-        resultMatrix[2][9] = calculatePrecitionAccuracy(prisonAutomaton, prisonTrainClustLists);
-        resultMatrix[2][10] = calculatePrecitionAccuracy(prisonAutomaton, altChickenTrainClustLists);
-        resultMatrix[2][11] = calculatePrecitionAccuracy(prisonAutomaton, altPrisonTrainClustLists);
-        resultMatrix[2][12] = calculatePrecitionAccuracy(prisonAutomaton, chickenPrisonTrainClustLists);
-        resultMatrix[2][13] = calculatePrecitionAccuracy(prisonAutomaton, combinedTrainClustLists);
-        resultMatrix[3][0] = calculatePrecitionAccuracy(altChickenAutomaton, altTestClustLists);
-        resultMatrix[3][1] = calculatePrecitionAccuracy(altChickenAutomaton, chickenTestClustLists);
-        resultMatrix[3][2] = calculatePrecitionAccuracy(altChickenAutomaton, prisonTestClustLists);
-        resultMatrix[3][3] = calculatePrecitionAccuracy(altChickenAutomaton, altChickenTestClustLists);
-        resultMatrix[3][4] = calculatePrecitionAccuracy(altChickenAutomaton, altPrisonTestClustLists);
-        resultMatrix[3][5] = calculatePrecitionAccuracy(altChickenAutomaton, chickenPrisonTestClustLists);
-        resultMatrix[3][6] = calculatePrecitionAccuracy(altChickenAutomaton, combinedTestClustLists);
-        resultMatrix[3][7] = calculatePrecitionAccuracy(altChickenAutomaton, altTrainClustLists);
-        resultMatrix[3][8] = calculatePrecitionAccuracy(altChickenAutomaton, chickenTrainClustLists);
-        resultMatrix[3][9] = calculatePrecitionAccuracy(altChickenAutomaton, prisonTrainClustLists);
-        resultMatrix[3][10] = calculatePrecitionAccuracy(altChickenAutomaton, altChickenTrainClustLists);
-        resultMatrix[3][11] = calculatePrecitionAccuracy(altChickenAutomaton, altPrisonTrainClustLists);
-        resultMatrix[3][12] = calculatePrecitionAccuracy(altChickenAutomaton, chickenPrisonTrainClustLists);
-        resultMatrix[3][13] = calculatePrecitionAccuracy(altChickenAutomaton, combinedTrainClustLists);
-        resultMatrix[4][0] = calculatePrecitionAccuracy(altPrisonAutomaton, altTestClustLists);
-        resultMatrix[4][1] = calculatePrecitionAccuracy(altPrisonAutomaton, chickenTestClustLists);
-        resultMatrix[4][2] = calculatePrecitionAccuracy(altPrisonAutomaton, prisonTestClustLists);
-        resultMatrix[4][3] = calculatePrecitionAccuracy(altPrisonAutomaton, altChickenTestClustLists);
-        resultMatrix[4][4] = calculatePrecitionAccuracy(altPrisonAutomaton, altPrisonTestClustLists);
-        resultMatrix[4][5] = calculatePrecitionAccuracy(altPrisonAutomaton, chickenPrisonTestClustLists);
-        resultMatrix[4][6] = calculatePrecitionAccuracy(altPrisonAutomaton, combinedTestClustLists);
-        resultMatrix[4][7] = calculatePrecitionAccuracy(altPrisonAutomaton, altTrainClustLists);
-        resultMatrix[4][8] = calculatePrecitionAccuracy(altPrisonAutomaton, chickenTrainClustLists);
-        resultMatrix[4][9] = calculatePrecitionAccuracy(altPrisonAutomaton, prisonTrainClustLists);
-        resultMatrix[4][10] = calculatePrecitionAccuracy(altPrisonAutomaton, altChickenTrainClustLists);
-        resultMatrix[4][11] = calculatePrecitionAccuracy(altPrisonAutomaton, altPrisonTrainClustLists);
-        resultMatrix[4][12] = calculatePrecitionAccuracy(altPrisonAutomaton, chickenPrisonTrainClustLists);
-        resultMatrix[4][13] = calculatePrecitionAccuracy(altPrisonAutomaton, combinedTrainClustLists);
-        resultMatrix[5][0] = calculatePrecitionAccuracy(chickenPrisonAutomaton, altTestClustLists);
-        resultMatrix[5][1] = calculatePrecitionAccuracy(chickenPrisonAutomaton, chickenTestClustLists);
-        resultMatrix[5][2] = calculatePrecitionAccuracy(chickenPrisonAutomaton, prisonTestClustLists);
-        resultMatrix[5][3] = calculatePrecitionAccuracy(chickenPrisonAutomaton, altChickenTestClustLists);
-        resultMatrix[5][4] = calculatePrecitionAccuracy(chickenPrisonAutomaton, altPrisonTestClustLists);
-        resultMatrix[5][5] = calculatePrecitionAccuracy(chickenPrisonAutomaton, chickenPrisonTestClustLists);
-        resultMatrix[5][6] = calculatePrecitionAccuracy(chickenPrisonAutomaton, combinedTestClustLists);
-        resultMatrix[5][7] = calculatePrecitionAccuracy(chickenPrisonAutomaton, altTrainClustLists);
-        resultMatrix[5][8] = calculatePrecitionAccuracy(chickenPrisonAutomaton, chickenTrainClustLists);
-        resultMatrix[5][9] = calculatePrecitionAccuracy(chickenPrisonAutomaton, prisonTrainClustLists);
-        resultMatrix[5][10] = calculatePrecitionAccuracy(chickenPrisonAutomaton, altChickenTrainClustLists);
-        resultMatrix[5][11] = calculatePrecitionAccuracy(chickenPrisonAutomaton, altPrisonTrainClustLists);
-        resultMatrix[5][12] = calculatePrecitionAccuracy(chickenPrisonAutomaton, chickenPrisonTrainClustLists);
-        resultMatrix[5][13] = calculatePrecitionAccuracy(chickenPrisonAutomaton, combinedTrainClustLists);
-        resultMatrix[6][0] = calculatePrecitionAccuracy(combinedAutomaton, altTestClustLists);
-        resultMatrix[6][1] = calculatePrecitionAccuracy(combinedAutomaton, chickenTestClustLists);
-        resultMatrix[6][2] = calculatePrecitionAccuracy(combinedAutomaton, prisonTestClustLists);
-        resultMatrix[6][3] = calculatePrecitionAccuracy(combinedAutomaton, altChickenTestClustLists);
-        resultMatrix[6][4] = calculatePrecitionAccuracy(combinedAutomaton, altPrisonTestClustLists);
-        resultMatrix[6][5] = calculatePrecitionAccuracy(combinedAutomaton, chickenPrisonTestClustLists);
-        resultMatrix[6][6] = calculatePrecitionAccuracy(combinedAutomaton, combinedTestClustLists);
-        resultMatrix[6][7] = calculatePrecitionAccuracy(combinedAutomaton, altTrainClustLists);
-        resultMatrix[6][8] = calculatePrecitionAccuracy(combinedAutomaton, chickenTrainClustLists);
-        resultMatrix[6][9] = calculatePrecitionAccuracy(combinedAutomaton, prisonTrainClustLists);
-        resultMatrix[6][10] = calculatePrecitionAccuracy(combinedAutomaton, altChickenTrainClustLists);
-        resultMatrix[6][11] = calculatePrecitionAccuracy(combinedAutomaton, altPrisonTrainClustLists);
-        resultMatrix[6][12] = calculatePrecitionAccuracy(combinedAutomaton, chickenPrisonTrainClustLists);
-        resultMatrix[6][13] = calculatePrecitionAccuracy(combinedAutomaton, combinedTrainClustLists);
-        double bestResult = 0;
-        for(int r = 0; r < resultMatrix.length; r++)
+        resultMatrix[0][0] = calculatePrecitionAccuracy(altAutomata, altTestClustLists);
+        resultMatrix[0][1] = calculatePrecitionAccuracy(altAutomata, chickenTestClustLists);
+        resultMatrix[0][2] = calculatePrecitionAccuracy(altAutomata, prisonTestClustLists);
+        resultMatrix[0][3] = calculatePrecitionAccuracy(altAutomata, altChickenTestClustLists);
+        resultMatrix[0][4] = calculatePrecitionAccuracy(altAutomata, altPrisonTestClustLists);
+        resultMatrix[0][5] = calculatePrecitionAccuracy(altAutomata, chickenPrisonTestClustLists);
+        resultMatrix[0][6] = calculatePrecitionAccuracy(altAutomata, combinedTestClustLists);
+        resultMatrix[0][7] = calculatePrecitionAccuracy(altAutomata, altTrainClustLists);
+        resultMatrix[0][8] = calculatePrecitionAccuracy(altAutomata, chickenTrainClustLists);
+        resultMatrix[0][9] = calculatePrecitionAccuracy(altAutomata, prisonTrainClustLists);
+        resultMatrix[0][10] = calculatePrecitionAccuracy(altAutomata, altChickenTrainClustLists);
+        resultMatrix[0][11] = calculatePrecitionAccuracy(altAutomata, altPrisonTrainClustLists);
+        resultMatrix[0][12] = calculatePrecitionAccuracy(altAutomata, chickenPrisonTrainClustLists);
+        resultMatrix[0][13] = calculatePrecitionAccuracy(altAutomata, combinedTrainClustLists);
+        resultMatrix[1][0] = calculatePrecitionAccuracy(chickenAutomata, altTestClustLists);
+        resultMatrix[1][1] = calculatePrecitionAccuracy(chickenAutomata, chickenTestClustLists);
+        resultMatrix[1][2] = calculatePrecitionAccuracy(chickenAutomata, prisonTestClustLists);
+        resultMatrix[1][3] = calculatePrecitionAccuracy(chickenAutomata, altChickenTestClustLists);
+        resultMatrix[1][4] = calculatePrecitionAccuracy(chickenAutomata, altPrisonTestClustLists);
+        resultMatrix[1][5] = calculatePrecitionAccuracy(chickenAutomata, chickenPrisonTestClustLists);
+        resultMatrix[1][6] = calculatePrecitionAccuracy(chickenAutomata, combinedTestClustLists);
+        resultMatrix[1][7] = calculatePrecitionAccuracy(chickenAutomata, altTrainClustLists);
+        resultMatrix[1][8] = calculatePrecitionAccuracy(chickenAutomata, chickenTrainClustLists);
+        resultMatrix[1][9] = calculatePrecitionAccuracy(chickenAutomata, prisonTrainClustLists);
+        resultMatrix[1][10] = calculatePrecitionAccuracy(chickenAutomata, altChickenTrainClustLists);
+        resultMatrix[1][11] = calculatePrecitionAccuracy(chickenAutomata, altPrisonTrainClustLists);
+        resultMatrix[1][12] = calculatePrecitionAccuracy(chickenAutomata, chickenPrisonTrainClustLists);
+        resultMatrix[1][13] = calculatePrecitionAccuracy(chickenAutomata, combinedTrainClustLists);
+        resultMatrix[2][0] = calculatePrecitionAccuracy(prisonAutomata, altTestClustLists);
+        resultMatrix[2][1] = calculatePrecitionAccuracy(prisonAutomata, chickenTestClustLists);
+        resultMatrix[2][2] = calculatePrecitionAccuracy(prisonAutomata, prisonTestClustLists);
+        resultMatrix[2][3] = calculatePrecitionAccuracy(prisonAutomata, altChickenTestClustLists);
+        resultMatrix[2][4] = calculatePrecitionAccuracy(prisonAutomata, altPrisonTestClustLists);
+        resultMatrix[2][5] = calculatePrecitionAccuracy(prisonAutomata, chickenPrisonTestClustLists);
+        resultMatrix[2][6] = calculatePrecitionAccuracy(prisonAutomata, combinedTestClustLists);
+        resultMatrix[2][7] = calculatePrecitionAccuracy(prisonAutomata, altTrainClustLists);
+        resultMatrix[2][8] = calculatePrecitionAccuracy(prisonAutomata, chickenTrainClustLists);
+        resultMatrix[2][9] = calculatePrecitionAccuracy(prisonAutomata, prisonTrainClustLists);
+        resultMatrix[2][10] = calculatePrecitionAccuracy(prisonAutomata, altChickenTrainClustLists);
+        resultMatrix[2][11] = calculatePrecitionAccuracy(prisonAutomata, altPrisonTrainClustLists);
+        resultMatrix[2][12] = calculatePrecitionAccuracy(prisonAutomata, chickenPrisonTrainClustLists);
+        resultMatrix[2][13] = calculatePrecitionAccuracy(prisonAutomata, combinedTrainClustLists);
+        resultMatrix[3][0] = calculatePrecitionAccuracy(altChickenAutomata, altTestClustLists);
+        resultMatrix[3][1] = calculatePrecitionAccuracy(altChickenAutomata, chickenTestClustLists);
+        resultMatrix[3][2] = calculatePrecitionAccuracy(altChickenAutomata, prisonTestClustLists);
+        resultMatrix[3][3] = calculatePrecitionAccuracy(altChickenAutomata, altChickenTestClustLists);
+        resultMatrix[3][4] = calculatePrecitionAccuracy(altChickenAutomata, altPrisonTestClustLists);
+        resultMatrix[3][5] = calculatePrecitionAccuracy(altChickenAutomata, chickenPrisonTestClustLists);
+        resultMatrix[3][6] = calculatePrecitionAccuracy(altChickenAutomata, combinedTestClustLists);
+        resultMatrix[3][7] = calculatePrecitionAccuracy(altChickenAutomata, altTrainClustLists);
+        resultMatrix[3][8] = calculatePrecitionAccuracy(altChickenAutomata, chickenTrainClustLists);
+        resultMatrix[3][9] = calculatePrecitionAccuracy(altChickenAutomata, prisonTrainClustLists);
+        resultMatrix[3][10] = calculatePrecitionAccuracy(altChickenAutomata, altChickenTrainClustLists);
+        resultMatrix[3][11] = calculatePrecitionAccuracy(altChickenAutomata, altPrisonTrainClustLists);
+        resultMatrix[3][12] = calculatePrecitionAccuracy(altChickenAutomata, chickenPrisonTrainClustLists);
+        resultMatrix[3][13] = calculatePrecitionAccuracy(altChickenAutomata, combinedTrainClustLists);
+        resultMatrix[4][0] = calculatePrecitionAccuracy(altPrisonAutomata, altTestClustLists);
+        resultMatrix[4][1] = calculatePrecitionAccuracy(altPrisonAutomata, chickenTestClustLists);
+        resultMatrix[4][2] = calculatePrecitionAccuracy(altPrisonAutomata, prisonTestClustLists);
+        resultMatrix[4][3] = calculatePrecitionAccuracy(altPrisonAutomata, altChickenTestClustLists);
+        resultMatrix[4][4] = calculatePrecitionAccuracy(altPrisonAutomata, altPrisonTestClustLists);
+        resultMatrix[4][5] = calculatePrecitionAccuracy(altPrisonAutomata, chickenPrisonTestClustLists);
+        resultMatrix[4][6] = calculatePrecitionAccuracy(altPrisonAutomata, combinedTestClustLists);
+        resultMatrix[4][7] = calculatePrecitionAccuracy(altPrisonAutomata, altTrainClustLists);
+        resultMatrix[4][8] = calculatePrecitionAccuracy(altPrisonAutomata, chickenTrainClustLists);
+        resultMatrix[4][9] = calculatePrecitionAccuracy(altPrisonAutomata, prisonTrainClustLists);
+        resultMatrix[4][10] = calculatePrecitionAccuracy(altPrisonAutomata, altChickenTrainClustLists);
+        resultMatrix[4][11] = calculatePrecitionAccuracy(altPrisonAutomata, altPrisonTrainClustLists);
+        resultMatrix[4][12] = calculatePrecitionAccuracy(altPrisonAutomata, chickenPrisonTrainClustLists);
+        resultMatrix[4][13] = calculatePrecitionAccuracy(altPrisonAutomata, combinedTrainClustLists);
+        resultMatrix[5][0] = calculatePrecitionAccuracy(chickenPrisonAutomata, altTestClustLists);
+        resultMatrix[5][1] = calculatePrecitionAccuracy(chickenPrisonAutomata, chickenTestClustLists);
+        resultMatrix[5][2] = calculatePrecitionAccuracy(chickenPrisonAutomata, prisonTestClustLists);
+        resultMatrix[5][3] = calculatePrecitionAccuracy(chickenPrisonAutomata, altChickenTestClustLists);
+        resultMatrix[5][4] = calculatePrecitionAccuracy(chickenPrisonAutomata, altPrisonTestClustLists);
+        resultMatrix[5][5] = calculatePrecitionAccuracy(chickenPrisonAutomata, chickenPrisonTestClustLists);
+        resultMatrix[5][6] = calculatePrecitionAccuracy(chickenPrisonAutomata, combinedTestClustLists);
+        resultMatrix[5][7] = calculatePrecitionAccuracy(chickenPrisonAutomata, altTrainClustLists);
+        resultMatrix[5][8] = calculatePrecitionAccuracy(chickenPrisonAutomata, chickenTrainClustLists);
+        resultMatrix[5][9] = calculatePrecitionAccuracy(chickenPrisonAutomata, prisonTrainClustLists);
+        resultMatrix[5][10] = calculatePrecitionAccuracy(chickenPrisonAutomata, altChickenTrainClustLists);
+        resultMatrix[5][11] = calculatePrecitionAccuracy(chickenPrisonAutomata, altPrisonTrainClustLists);
+        resultMatrix[5][12] = calculatePrecitionAccuracy(chickenPrisonAutomata, chickenPrisonTrainClustLists);
+        resultMatrix[5][13] = calculatePrecitionAccuracy(chickenPrisonAutomata, combinedTrainClustLists);
+        resultMatrix[6][0] = calculatePrecitionAccuracy(combinedAutomata, altTestClustLists);
+        resultMatrix[6][1] = calculatePrecitionAccuracy(combinedAutomata, chickenTestClustLists);
+        resultMatrix[6][2] = calculatePrecitionAccuracy(combinedAutomata, prisonTestClustLists);
+        resultMatrix[6][3] = calculatePrecitionAccuracy(combinedAutomata, altChickenTestClustLists);
+        resultMatrix[6][4] = calculatePrecitionAccuracy(combinedAutomata, altPrisonTestClustLists);
+        resultMatrix[6][5] = calculatePrecitionAccuracy(combinedAutomata, chickenPrisonTestClustLists);
+        resultMatrix[6][6] = calculatePrecitionAccuracy(combinedAutomata, combinedTestClustLists);
+        resultMatrix[6][7] = calculatePrecitionAccuracy(combinedAutomata, altTrainClustLists);
+        resultMatrix[6][8] = calculatePrecitionAccuracy(combinedAutomata, chickenTrainClustLists);
+        resultMatrix[6][9] = calculatePrecitionAccuracy(combinedAutomata, prisonTrainClustLists);
+        resultMatrix[6][10] = calculatePrecitionAccuracy(combinedAutomata, altChickenTrainClustLists);
+        resultMatrix[6][11] = calculatePrecitionAccuracy(combinedAutomata, altPrisonTrainClustLists);
+        resultMatrix[6][12] = calculatePrecitionAccuracy(combinedAutomata, chickenPrisonTrainClustLists);
+        resultMatrix[6][13] = calculatePrecitionAccuracy(combinedAutomata, combinedTrainClustLists);
+        if(verbose)
         {
-            for(int c = 0; c < resultMatrix[r].length; c++)
+            double bestResult = 0;
+            for(int r = 0; r < resultMatrix.length; r++)
             {
-                if(resultMatrix[r][c] > bestResult)
+                for(int c = 0; c < resultMatrix[r].length; c++)
                 {
-                    bestResult = resultMatrix[r][c];
+                    if(resultMatrix[r][c] > bestResult)
+                    {
+                        bestResult = resultMatrix[r][c];
+                    }
+                    System.out.print(resultMatrix[r][c]);
+                    System.out.print('\t');
                 }
-                System.out.print(resultMatrix[r][c]);
-                System.out.print('\t');
+                System.out.println();
             }
-            System.out.println();
+            System.out.println(bestResult);
+            print(resultMatrix, fileNum);
         }
-        System.out.println(bestResult);
-        print(resultMatrix);
 
-        int[] altAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(altAutomaton, altTestClustLists, altConverter, altTestGames);
-        int[] altAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(altAutomaton, chickenTestClustLists, chickenConverter, chickenTestGames);
-        int[] altAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(altAutomaton, prisonTestClustLists, prisonConverter, prisonTestGames);
-        int[] altAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(altAutomaton, altTrainClustLists, altConverter, altTrainGames);
-        int[] altAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(altAutomaton, chickenTrainClustLists, chickenConverter, chickenTrainGames);
-        int[] altAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(altAutomaton, prisonTrainClustLists, prisonConverter, prisonTrainGames);
+        int[] altAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(altAutomata, altTestClustLists, altConverter, altTestGames);
+        int[] altAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(altAutomata, chickenTestClustLists, chickenConverter, chickenTestGames);
+        int[] altAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(altAutomata, prisonTestClustLists, prisonConverter, prisonTestGames);
+        int[] altAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(altAutomata, altTrainClustLists, altConverter, altTrainGames);
+        int[] altAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(altAutomata, chickenTrainClustLists, chickenConverter, chickenTrainGames);
+        int[] altAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(altAutomata, prisonTrainClustLists, prisonConverter, prisonTrainGames);
 
-        int[] chickenAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomaton, altTestClustLists, altConverter, altTestGames);
-        int[] chickenAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomaton, chickenTestClustLists, chickenConverter, chickenTestGames);
-        int[] chickenAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomaton, prisonTestClustLists, prisonConverter, prisonTestGames);
-        int[] chickenAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomaton, altTrainClustLists, altConverter, altTrainGames);
-        int[] chickenAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomaton, chickenTrainClustLists, chickenConverter, chickenTrainGames);
-        int[] chickenAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomaton, prisonTrainClustLists, prisonConverter, prisonTrainGames);
+        int[] chickenAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomata, altTestClustLists, altConverter, altTestGames);
+        int[] chickenAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomata, chickenTestClustLists, chickenConverter, chickenTestGames);
+        int[] chickenAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomata, prisonTestClustLists, prisonConverter, prisonTestGames);
+        int[] chickenAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomata, altTrainClustLists, altConverter, altTrainGames);
+        int[] chickenAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomata, chickenTrainClustLists, chickenConverter, chickenTrainGames);
+        int[] chickenAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenAutomata, prisonTrainClustLists, prisonConverter, prisonTrainGames);
 
-        int[] prisonAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomaton, altTestClustLists, altConverter, altTestGames);
-        int[] prisonAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomaton, chickenTestClustLists, chickenConverter, chickenTestGames);
-        int[] prisonAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomaton, prisonTestClustLists, prisonConverter, prisonTestGames);
-        int[] prisonAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomaton, altTrainClustLists, altConverter, altTrainGames);
-        int[] prisonAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomaton, chickenTrainClustLists, chickenConverter, chickenTrainGames);
-        int[] prisonAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomaton, prisonTrainClustLists, prisonConverter, prisonTrainGames);
+        int[] prisonAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomata, altTestClustLists, altConverter, altTestGames);
+        int[] prisonAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomata, chickenTestClustLists, chickenConverter, chickenTestGames);
+        int[] prisonAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomata, prisonTestClustLists, prisonConverter, prisonTestGames);
+        int[] prisonAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomata, altTrainClustLists, altConverter, altTrainGames);
+        int[] prisonAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomata, chickenTrainClustLists, chickenConverter, chickenTrainGames);
+        int[] prisonAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(prisonAutomata, prisonTrainClustLists, prisonConverter, prisonTrainGames);
 
-        int[] altChickenAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomaton, altTestClustLists, altConverter, altTestGames);
-        int[] altChickenAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomaton, chickenTestClustLists, chickenConverter, chickenTestGames);
-        int[] altChickenAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomaton, prisonTestClustLists, prisonConverter, prisonTestGames);
-        int[] altChickenAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomaton, altTrainClustLists, altConverter, altTrainGames);
-        int[] altChickenAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomaton, chickenTrainClustLists, chickenConverter, chickenTrainGames);
-        int[] altChickenAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomaton, prisonTrainClustLists, prisonConverter, prisonTrainGames);
+        int[] altChickenAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomata, altTestClustLists, altConverter, altTestGames);
+        int[] altChickenAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomata, chickenTestClustLists, chickenConverter, chickenTestGames);
+        int[] altChickenAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomata, prisonTestClustLists, prisonConverter, prisonTestGames);
+        int[] altChickenAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomata, altTrainClustLists, altConverter, altTrainGames);
+        int[] altChickenAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomata, chickenTrainClustLists, chickenConverter, chickenTrainGames);
+        int[] altChickenAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(altChickenAutomata, prisonTrainClustLists, prisonConverter, prisonTrainGames);
 
-        int[] altPrisonAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomaton, altTestClustLists, altConverter, altTestGames);
-        int[] altPrisonAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomaton, chickenTestClustLists, chickenConverter, chickenTestGames);
-        int[] altPrisonAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomaton, prisonTestClustLists, prisonConverter, prisonTestGames);
-        int[] altPrisonAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomaton, altTrainClustLists, altConverter, altTrainGames);
-        int[] altPrisonAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomaton, chickenTrainClustLists, chickenConverter, chickenTrainGames);
-        int[] altPrisonAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomaton, prisonTrainClustLists, prisonConverter, prisonTrainGames);
+        int[] altPrisonAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomata, altTestClustLists, altConverter, altTestGames);
+        int[] altPrisonAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomata, chickenTestClustLists, chickenConverter, chickenTestGames);
+        int[] altPrisonAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomata, prisonTestClustLists, prisonConverter, prisonTestGames);
+        int[] altPrisonAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomata, altTrainClustLists, altConverter, altTrainGames);
+        int[] altPrisonAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomata, chickenTrainClustLists, chickenConverter, chickenTrainGames);
+        int[] altPrisonAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(altPrisonAutomata, prisonTrainClustLists, prisonConverter, prisonTrainGames);
 
-        int[] chickenPrisonAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomaton, altTestClustLists, altConverter, altTestGames);
-        int[] chickenPrisonAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomaton, chickenTestClustLists, chickenConverter, chickenTestGames);
-        int[] chickenPrisonAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomaton, prisonTestClustLists, prisonConverter, prisonTestGames);
-        int[] chickenPrisonAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomaton, altTrainClustLists, altConverter, altTrainGames);
-        int[] chickenPrisonAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomaton, chickenTrainClustLists, chickenConverter, chickenTrainGames);
-        int[] chickenPrisonAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomaton, prisonTrainClustLists, prisonConverter, prisonTrainGames);
+        int[] chickenPrisonAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomata, altTestClustLists, altConverter, altTestGames);
+        int[] chickenPrisonAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomata, chickenTestClustLists, chickenConverter, chickenTestGames);
+        int[] chickenPrisonAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomata, prisonTestClustLists, prisonConverter, prisonTestGames);
+        int[] chickenPrisonAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomata, altTrainClustLists, altConverter, altTrainGames);
+        int[] chickenPrisonAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomata, chickenTrainClustLists, chickenConverter, chickenTrainGames);
+        int[] chickenPrisonAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(chickenPrisonAutomata, prisonTrainClustLists, prisonConverter, prisonTrainGames);
 
-        int[] combinedAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomaton, altTestClustLists, altConverter, altTestGames);
-        int[] combinedAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomaton, chickenTestClustLists, chickenConverter, chickenTestGames);
-        int[] combinedAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomaton, prisonTestClustLists, prisonConverter, prisonTestGames);
-        int[] combinedAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomaton, altTrainClustLists, altConverter, altTrainGames);
-        int[] combinedAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomaton, chickenTrainClustLists, chickenConverter, chickenTrainGames);
-        int[] combinedAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomaton, prisonTrainClustLists, prisonConverter, prisonTrainGames);
+        int[] combinedAutAltTestPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomata, altTestClustLists, altConverter, altTestGames);
+        int[] combinedAutChickenTestPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomata, chickenTestClustLists, chickenConverter, chickenTestGames);
+        int[] combinedAutPrisonTestPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomata, prisonTestClustLists, prisonConverter, prisonTestGames);
+        int[] combinedAutAltTrainPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomata, altTrainClustLists, altConverter, altTrainGames);
+        int[] combinedAutChickenTrainPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomata, chickenTrainClustLists, chickenConverter, chickenTrainGames);
+        int[] combinedAutPrisonTrainPredAccuracy = calculateConvertedPredictionAccuracy(combinedAutomata, prisonTrainClustLists, prisonConverter, prisonTrainGames);
+
+        System.out.print("Alternator train: ");
+        System.out.print(altAutAltTrainPredAccuracy[0]);
+        System.out.print(" / ");
+        System.out.println(altAutAltTrainPredAccuracy[1]);
+
+        System.out.print("Chicken train: ");
+        System.out.print(chickenAutChickenTrainPredAccuracy[0]);
+        System.out.print(" / ");
+        System.out.println(chickenAutChickenTrainPredAccuracy[1]);
+
+        System.out.print("Prisoner's Dilemma train: ");
+        System.out.print(prisonAutPrisonTrainPredAccuracy[0]);
+        System.out.print(" / ");
+        System.out.println(prisonAutPrisonTrainPredAccuracy[1]);
 
         double[][] predictedResultMatrix = new double[7][14];
         predictedResultMatrix[0][0] = ((double) altAutAltTestPredAccuracy[0]) / ((double) altAutAltTestPredAccuracy[1]);
@@ -748,32 +840,40 @@ public class MegaAutomatonTest
         predictedResultMatrix[6][12] = ((double) (combinedAutChickenTrainPredAccuracy[0] + combinedAutPrisonTrainPredAccuracy[0])) / ((double) (combinedAutChickenTrainPredAccuracy[1] + combinedAutPrisonTrainPredAccuracy[1]));
         predictedResultMatrix[6][13] = ((double) (combinedAutAltTrainPredAccuracy[0] + combinedAutChickenTrainPredAccuracy[0] + combinedAutPrisonTrainPredAccuracy[0])) / ((double) (combinedAutAltTrainPredAccuracy[1] + combinedAutChickenTrainPredAccuracy[1] + combinedAutPrisonTrainPredAccuracy[1]));
 
-        double combinedBest = 0;
-        for(int r = 0; r < predictedResultMatrix.length; r++)
+        if(verbose)
         {
-            for(int c = 0; c < predictedResultMatrix[r].length; c++)
+            double combinedBest = 0;
+            for(int r = 0; r < predictedResultMatrix.length; r++)
             {
-                double predictedResult = predictedResultMatrix[r][c];
-                if(predictedResult > combinedBest)
+                for(int c = 0; c < predictedResultMatrix[r].length; c++)
                 {
-                    combinedBest = predictedResult;
+                    double predictedResult = predictedResultMatrix[r][c];
+                    if(predictedResult > combinedBest)
+                    {
+                        combinedBest = predictedResult;
+                    }
+                    System.out.print(predictedResult);
+                    System.out.print('\t');
                 }
-                System.out.print(predictedResult);
-                System.out.print('\t');
+                System.out.println();
             }
-            System.out.println();
+            System.out.println(combinedBest);
+            printConverted(predictedResultMatrix, fileNum);
+            printExtractedFiles(altAutomata, chickenAutomata, prisonAutomata, altChickenAutomata, altPrisonAutomata, chickenPrisonAutomata, combinedAutomata, altConverter, chickenConverter, prisonConverter, fl2dsavcl);
         }
-        System.out.println(combinedBest);
-        printConverted(predictedResultMatrix);
-        printExtractedFiles(altAutomaton, chickenAutomaton, prisonAutomaton, altChickenAutomaton, altPrisonAutomaton, chickenPrisonAutomaton, combinedAutomaton, altConverter, chickenConverter, prisonConverter, fl2dsavcl);
+        return predictedResultMatrix;
     }
 
-    private double calculatePrecitionAccuracy(DSGeneralAutomaton automaton, List<int[][]> clusteredData)
+    private double calculatePrecitionAccuracy(AutomataGroup automata, List<int[][]> clusteredData)
     {
         int total = 0;
         int totalCorrect = 0;
+        int[] previouslyCorrect = new int[2];
+        previouslyCorrect[0] = -1;
+        previouslyCorrect[1] = -1;
         for(int[][] clusteredDatum : clusteredData)
         {
+            automata.prepForNewGame();
             for(int i = 0; i < clusteredDatum.length - memoryLength - 1; i++)
             {
                 int[][] sequence = new int[memoryLength][4];
@@ -784,22 +884,30 @@ public class MegaAutomatonTest
                     sequence[hist][2] = clusteredDatum[i + hist][2];
                     sequence[hist][3] = clusteredDatum[i + hist][3];
                 }
-                int[] predicted = automaton.getMostProbableActionAndMessage(sequence);
+                int[] predicted = automata.getMostProbableActionAndMessage(previouslyCorrect, sequence);
                 if(predicted[0] == clusteredDatum[i + memoryLength][0] && predicted[1] == clusteredDatum[i + memoryLength][1])
                 {
                     totalCorrect++;
                 }
+                previouslyCorrect[0] = clusteredDatum[i + memoryLength][0];
+                previouslyCorrect[1] = clusteredDatum[i + memoryLength][1];
                 total++;
             }
         }
         return ((double) totalCorrect) / ((double) total);
     }
 
-    private void print(double[][] resultMatrix)
+    private void print(double[][] resultMatrix, int fileNum)
     {
         StringBuilder b = new StringBuilder();
         b.append(dir);
-        b.append("\\Automaton Test Results.csv");
+        b.append("\\Automaton Test Results ");
+        b.append(fileNum);
+        b.append("M");
+        b.append(memoryLength);
+        b.append("T");
+        b.append(nTrees);
+        b.append(".csv");
         try(FileWriter fWriter = new FileWriter(b.toString()))
         {
             for(int d = 0; d < dispAVClusters.length; d++)
@@ -851,12 +959,14 @@ public class MegaAutomatonTest
         }
     }
 
-    private void printConverted(double[][] resultMatrix)
+    private void printConverted(double[][] resultMatrix, int fileNum)
     {
         {
             StringBuilder b = new StringBuilder();
             b.append(dir);
-            b.append("\\Automaton Converted Test Results.csv");
+            b.append("\\Automaton Converted Test Results");
+            b.append(fileNum);
+            b.append(".csv");
             try(FileWriter fWriter = new FileWriter(b.toString()))
             {
                 for(int d = 0; d < dispAVClusters.length; d++)
@@ -909,7 +1019,7 @@ public class MegaAutomatonTest
         }
     }
 
-    private int[] calculateConvertedPredictionAccuracy(DSGeneralAutomaton automaton, List<int[][]> clusteredData, ActionAttitudeConverter converter, Game[] games)
+    private int[] calculateConvertedPredictionAccuracy(AutomataGroup automata, List<int[][]> clusteredData, ActionAttitudeConverter converter, Game[] games)
     {
         int counter = 0;
         int total = 0;
@@ -918,6 +1028,12 @@ public class MegaAutomatonTest
         {
             Game game = games[counter];
             counter++;
+            automata.prepForNewGame();
+            boolean[] previouslyCorrect = new boolean[automata.size() + 1];
+            for(int pC = 0; pC < previouslyCorrect.length; pC++)
+            {
+                previouslyCorrect[pC] = true;
+            }
             for(int i = 0; i < clusteredDatum.length - memoryLength - 1; i++)
             {
                 int[][] sequence = new int[memoryLength][4];
@@ -928,60 +1044,86 @@ public class MegaAutomatonTest
                     sequence[hist][2] = clusteredDatum[i + hist][2];
                     sequence[hist][3] = clusteredDatum[i + hist][3];
                 }
-                int[] predicted = automaton.getMostProbableActionAndMessage(sequence);
-                // Convert and check
-                if(predicted[0] >= 0 && predicted[1] >= 0)
+                int[][] predictionArray = automata.getPredictionArray(previouslyCorrect, sequence);
+                previouslyCorrect = new boolean[predictionArray.length];
+                for(int p = 0; p < predictionArray.length; p++)
                 {
-                    AttitudeVector predictedAV = (AttitudeVector) dispAVClusters[predicted[0]].getCentroid();
-                    int[] prevActPair = game.getActionPair(i + memoryLength - 1);
-                    AttitudeVector prevAttDisp = converter.getAttitudeVectorFromActionPair(prevActPair[0], prevActPair[1]);
-                    AttitudeVector extrapolatedAV = AttitudeVector.extrapolate(prevAttDisp, predictedAV);
-                    int[] predictedActs = converter.attitudeVectorToActions(extrapolatedAV);
-                    if(predictedActs[0] == game.getPlayer1().getAction(i + memoryLength))
+                    int[] predicted = predictionArray[p];
+                    if(predicted[0] >= 0 && predicted[1] >= 0)
                     {
-                        // Determine if anything should be said or not
-                        SpeechAct[] messages = game.getPlayer1().getMessage(i + memoryLength);
-                        int[] predictedMessages = converter.attitudeVectorToActions((AttitudeVector) saidAVClusters[predicted[1]].getCentroid());
-                        if(((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getGreedy() == 0 &&
-                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getPlacate() == 0 &&
-                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getCooperate() == 0 &&
-                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getAbsurd() == 0)
+                        AttitudeVector predictedAV = (AttitudeVector) dispAVClusters[predicted[0]].getCentroid();
+                        int[] prevActPair = game.getActionPair(i + memoryLength - 1);
+                        AttitudeVector prevAttDisp = converter.getAttitudeVectorFromActionPair(prevActPair[0], prevActPair[1]);
+                        AttitudeVector extrapolatedAV = AttitudeVector.extrapolate(prevAttDisp, predictedAV);
+                        int[] predictedActs = converter.attitudeVectorToActions(extrapolatedAV);
+                        if(predictedActs[0] == game.getPlayer1().getAction(i + memoryLength))
                         {
-                            if(messages.length == 0)
+                            if(p == 0)
                             {
                                 totalCorrect++;
                             }
-                        } else
+                            previouslyCorrect[p] = true;
+//                            // Determine if anything should be said or not
+//                            SpeechAct[] messages = game.getPlayer1().getMessage(i + memoryLength);
+//                            int[] predictedMessages = converter.attitudeVectorToActions((AttitudeVector) saidAVClusters[predicted[1]].getCentroid());
+//                            if(((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getGreedy() == 0 &&
+//                                    ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getPlacate() == 0 &&
+//                                    ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getCooperate() == 0 &&
+//                                    ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getAbsurd() == 0)
+//                            {
+//                                if(messages.length == 0)
+//                                {
+//                                    previouslyCorrect[p] = true;
+//                                    if(p == 0)
+//                                    {
+//                                        totalCorrect++;
+//                                    }
+//                                }
+//                            } else
+//                            {
+//                                boolean alternatingMessage = !(predictedMessages[0] == predictedMessages[2]
+//                                        && predictedMessages[1] == predictedMessages[3]);
+//                                for(int m = 0; m < messages.length; m++)
+//                                {
+//                                    if(alternatingMessage && messages[m].size() == 2)
+//                                    {
+//                                        if((messages[m].getJointAction()[0] == predictedMessages[0]
+//                                                && messages[m].getJointAction()[1] == predictedMessages[1]
+//                                                && messages[m].getSecondJointAction()[0] == predictedMessages[2]
+//                                                && messages[m].getSecondJointAction()[1] == predictedMessages[3])
+//                                                || (messages[m].getJointAction()[0] == predictedMessages[2]
+//                                                && messages[m].getJointAction()[1] == predictedMessages[3]
+//                                                && messages[m].getSecondJointAction()[0] == predictedMessages[0]
+//                                                && messages[m].getSecondJointAction()[1] == predictedMessages[1]))
+//                                        {
+//                                            previouslyCorrect[p] = true;
+//                                            if(p == 0)
+//                                            {
+//                                                totalCorrect++;
+//                                            }
+//                                            break;
+//                                        }
+//                                    } else if(!alternatingMessage && messages[m].size() == 1)
+//                                    {
+//                                        if(messages[m].getJointAction()[0] == predictedMessages[0] && messages[m].getJointAction()[1] == predictedMessages[1])
+//                                        {
+//                                            previouslyCorrect[p] = true;
+//                                            if(p == 0)
+//                                            {
+//                                                totalCorrect++;
+//                                            }
+//                                            break;
+//                                        }
+//                                    }
+//                                }
+//                            }
+                        } else if(p == 0)
                         {
-                            boolean alternatingMessage = !(predictedMessages[0] == predictedMessages[2]
-                                    && predictedMessages[1] == predictedMessages[3]);
-                            for(int m = 0; m < messages.length; m++)
-                            {
-                                if(alternatingMessage && messages[m].size() == 2)
-                                {
-                                    if((messages[m].getJointAction()[0] == predictedMessages[0]
-                                            && messages[m].getJointAction()[1] == predictedMessages[1]
-                                            && messages[m].getSecondJointAction()[0] == predictedMessages[2]
-                                            && messages[m].getSecondJointAction()[1] == predictedMessages[3])
-                                            || (messages[m].getJointAction()[0] == predictedMessages[2]
-                                            && messages[m].getJointAction()[1] == predictedMessages[3]
-                                            && messages[m].getSecondJointAction()[0] == predictedMessages[0]
-                                            && messages[m].getSecondJointAction()[1] == predictedMessages[1]))
-                                    {
-                                        totalCorrect++;
-                                        break;
-                                    }
-                                } else if(!alternatingMessage && messages[m].size() == 1)
-                                {
-                                    if(messages[m].getJointAction()[0] == predictedMessages[0] && messages[m].getJointAction()[1] == predictedMessages[1])
-                                    {
-                                        totalCorrect++;
-                                        break;
-                                    }
-                                }
-                            }
+                            previouslyCorrect[p] = false;
                         }
-                    }
+                }
+//                int[] predicted = predictionArray[0];
+                // Convert and check
                 }
                 total++;
             }
@@ -992,35 +1134,60 @@ public class MegaAutomatonTest
         return result;
     }
 
-    private void printExtractedFiles(DSGeneralAutomaton altAutomaton, DSGeneralAutomaton chickAutomaton,
-                                     DSGeneralAutomaton pdAutomaton, DSGeneralAutomaton altChickAutomaton,
-                                     DSGeneralAutomaton altPDAutomaton, DSGeneralAutomaton chickPDAutomaton,
-                                     DSGeneralAutomaton allAutomaton, ActionAttitudeConverter altConverter,
+    private void printExtractedFiles(AutomataGroup altAutomata, AutomataGroup chickAutomata,
+                                     AutomataGroup pdAutomata, AutomataGroup altChickAutomata,
+                                     AutomataGroup altPDAutomata, AutomataGroup chickPDAutomata,
+                                     AutomataGroup allAutomata, ActionAttitudeConverter altConverter,
                                      ActionAttitudeConverter chickenConverter, ActionAttitudeConverter prisonConverter,
                                      FeatList2DSAttVecClustList fl2dsavcl)
     {
         for(int g = 0; g < altGames.length; g++)
         {
-            printExtractedFile(altFiles[2 * g], altGames[g], gameFeatureMap.get(altGames[g]), altAutomaton, chickAutomaton, allAutomaton, altConverter, fl2dsavcl, "alternator_", altTrainFeatureCollection.contains(gameFeatureMap.get(altGames[g])));
+            altAutomata.prepForNewGame();
+            chickAutomata.prepForNewGame();
+            allAutomata.prepForNewGame();
+            printExtractedFile(altFiles[2 * g], altGames[g], gameFeatureMap.get(altGames[g]), altAutomata, chickAutomata, allAutomata, altConverter, fl2dsavcl, "alternator_", altTrainFeatureCollection.contains(gameFeatureMap.get(altGames[g])));
         }
         for(int g = 0; g < chickenGames.length; g++)
         {
-            printExtractedFile(chickenFiles[2 * g], chickenGames[g], gameFeatureMap.get(chickenGames[g]), chickAutomaton, altAutomaton, allAutomaton, chickenConverter, fl2dsavcl, "chicken_", chickenTrainFeatureCollection.contains(gameFeatureMap.get(chickenGames[g])));
+            chickAutomata.prepForNewGame();
+            altAutomata.prepForNewGame();
+            allAutomata.prepForNewGame();
+            printExtractedFile(chickenFiles[2 * g], chickenGames[g], gameFeatureMap.get(chickenGames[g]), chickAutomata, altAutomata, allAutomata, chickenConverter, fl2dsavcl, "chicken_", chickenTrainFeatureCollection.contains(gameFeatureMap.get(chickenGames[g])));
         }
         for(int g = 0; g < prisonGames.length; g++)
         {
-            printExtractedFile(prisonFiles[2 * g], prisonGames[g], gameFeatureMap.get(prisonGames[g]), pdAutomaton, altAutomaton, allAutomaton, prisonConverter, fl2dsavcl, "prisoners_dilemma_", prisonTrainFeatureCollection.contains(gameFeatureMap.get(prisonGames[g])));
+            pdAutomata.prepForNewGame();
+            altAutomata.prepForNewGame();
+            allAutomata.prepForNewGame();
+            printExtractedFile(prisonFiles[2 * g], prisonGames[g], gameFeatureMap.get(prisonGames[g]), pdAutomata, altAutomata, allAutomata, prisonConverter, fl2dsavcl, "prisoners_dilemma_", prisonTrainFeatureCollection.contains(gameFeatureMap.get(prisonGames[g])));
         }
     }
 
-    private void printExtractedFile(File gameFile, Game game, List<Feature> fList, DSGeneralAutomaton matchingAutomaton,
-                                    DSGeneralAutomaton otherAutomaton, DSGeneralAutomaton allAutomaton, ActionAttitudeConverter converter,
+    private void printExtractedFile(File gameFile, Game game, List<Feature> fList, AutomataGroup matchingAutomata,
+                                    AutomataGroup otherAutomata, AutomataGroup allAutomata, ActionAttitudeConverter converter,
                                     FeatList2DSAttVecClustList fl2dsavcl, String gameName, boolean training)
     {
 //        ArrayList<Feature> fList = new ArrayList<>();
 //        fList.addAll(featureList);
         int[][] clustIndexList = fl2dsavcl.getClusterIndexList(fList,dispAVClusters, saidAVClusters);
+        boolean[] previouslyCorrect1 = new boolean[matchingAutomata.size() + 1];
+        boolean[] previouslyCorrect2 = new boolean[otherAutomata.size() + 1];
+        boolean[] previouslyCorrect3 = new boolean[allAutomata.size() + 1];
+        for(int i = 0; i < previouslyCorrect1.length; i++)
+        {
+            previouslyCorrect1[i] = true;
+        }
+        for(int i = 0; i < previouslyCorrect2.length; i++)
+        {
+            previouslyCorrect2[i] = true;
+        }
+        for(int i = 0; i < previouslyCorrect3.length; i++)
+        {
+            previouslyCorrect3[i] = true;
+        }
         int[][] predictedAct = new int[clustIndexList.length - memoryLength][3];
+        int[][][] pArray = new int[clustIndexList.length - memoryLength][3][Math.max(Math.max(matchingAutomata.size(),otherAutomata.size()), allAutomata.size())];
         for(int i = 0; i < clustIndexList.length - memoryLength; i++)
         {
             int[][] sequence = new int[memoryLength][4];
@@ -1031,13 +1198,166 @@ public class MegaAutomatonTest
                 sequence[hist][2] = clustIndexList[i + hist][2];
                 sequence[hist][3] = clustIndexList[i + hist][3];
             }
-            int[] predicted1 = matchingAutomaton.getMostProbableActionAndMessage(sequence);
-            int[] predicted2 = otherAutomaton.getMostProbableActionAndMessage(sequence);
-            int[] predicted3 = allAutomaton.getMostProbableActionAndMessage(sequence);
+            //===========INSERTED HERE=====================
+            int[][] predictionArray1 = matchingAutomata.getPredictionArray(previouslyCorrect1, sequence);
+            int[][] predictionArray2 = otherAutomata.getPredictionArray(previouslyCorrect2, sequence);
+            int[][] predictionArray3 = allAutomata.getPredictionArray(previouslyCorrect3, sequence);
+            previouslyCorrect1 = new boolean[predictionArray1.length];
+            previouslyCorrect2 = new boolean[predictionArray2.length];
+            previouslyCorrect3 = new boolean[predictionArray3.length];
+            for(int p = 0; p < predictionArray1.length; p++)
+            {
+                int[] predicted = predictionArray1[p];
+                if (predicted[0] >= 0 && predicted[1] >= 0) {
+                    AttitudeVector predictedAV = (AttitudeVector) dispAVClusters[predicted[0]].getCentroid();
+                    int[] prevActPair = game.getActionPair(i + memoryLength - 1);
+                    AttitudeVector prevAttDisp = converter.getAttitudeVectorFromActionPair(prevActPair[0], prevActPair[1]);
+                    AttitudeVector extrapolatedAV = AttitudeVector.extrapolate(prevAttDisp, predictedAV);
+                    int[] predictedActs = converter.attitudeVectorToActions(extrapolatedAV);
+                    if (predictedActs[0] == game.getPlayer1().getAction(i + memoryLength)) {
+                        // Determine if anything should be said or not
+                        SpeechAct[] messages = game.getPlayer1().getMessage(i + memoryLength);
+                        int[] predictedMessages = converter.attitudeVectorToActions((AttitudeVector) saidAVClusters[predicted[1]].getCentroid());
+                        if (((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getGreedy() == 0 &&
+                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getPlacate() == 0 &&
+                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getCooperate() == 0 &&
+                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getAbsurd() == 0) {
+                            if (messages.length == 0) {
+                                previouslyCorrect1[p] = true;
+                            }
+                        } else {
+                            boolean alternatingMessage = !(predictedMessages[0] == predictedMessages[2]
+                                    && predictedMessages[1] == predictedMessages[3]);
+                            for (int m = 0; m < messages.length; m++) {
+                                if (alternatingMessage && messages[m].size() == 2) {
+                                    if ((messages[m].getJointAction()[0] == predictedMessages[0]
+                                            && messages[m].getJointAction()[1] == predictedMessages[1]
+                                            && messages[m].getSecondJointAction()[0] == predictedMessages[2]
+                                            && messages[m].getSecondJointAction()[1] == predictedMessages[3])
+                                            || (messages[m].getJointAction()[0] == predictedMessages[2]
+                                            && messages[m].getJointAction()[1] == predictedMessages[3]
+                                            && messages[m].getSecondJointAction()[0] == predictedMessages[0]
+                                            && messages[m].getSecondJointAction()[1] == predictedMessages[1])) {
+                                        previouslyCorrect1[p] = true;
+                                        break;
+                                    }
+                                } else if (!alternatingMessage && messages[m].size() == 1) {
+                                    if (messages[m].getJointAction()[0] == predictedMessages[0] && messages[m].getJointAction()[1] == predictedMessages[1]) {
+                                        previouslyCorrect1[p] = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for(int p = 0; p < predictionArray2.length; p++)
+            {
+                int[] predicted = predictionArray2[p];
+                if (predicted[0] >= 0 && predicted[1] >= 0) {
+                    AttitudeVector predictedAV = (AttitudeVector) dispAVClusters[predicted[0]].getCentroid();
+                    int[] prevActPair = game.getActionPair(i + memoryLength - 1);
+                    AttitudeVector prevAttDisp = converter.getAttitudeVectorFromActionPair(prevActPair[0], prevActPair[1]);
+                    AttitudeVector extrapolatedAV = AttitudeVector.extrapolate(prevAttDisp, predictedAV);
+                    int[] predictedActs = converter.attitudeVectorToActions(extrapolatedAV);
+                    if (predictedActs[0] == game.getPlayer1().getAction(i + memoryLength)) {
+                        // Determine if anything should be said or not
+                        SpeechAct[] messages = game.getPlayer1().getMessage(i + memoryLength);
+                        int[] predictedMessages = converter.attitudeVectorToActions((AttitudeVector) saidAVClusters[predicted[1]].getCentroid());
+                        if (((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getGreedy() == 0 &&
+                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getPlacate() == 0 &&
+                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getCooperate() == 0 &&
+                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getAbsurd() == 0) {
+                            if (messages.length == 0)
+                            {
+                                previouslyCorrect2[p] = true;
+                            }
+                        } else
+                            {
+                            boolean alternatingMessage = !(predictedMessages[0] == predictedMessages[2]
+                                    && predictedMessages[1] == predictedMessages[3]);
+                            for (int m = 0; m < messages.length; m++) {
+                                if (alternatingMessage && messages[m].size() == 2) {
+                                    if ((messages[m].getJointAction()[0] == predictedMessages[0]
+                                            && messages[m].getJointAction()[1] == predictedMessages[1]
+                                            && messages[m].getSecondJointAction()[0] == predictedMessages[2]
+                                            && messages[m].getSecondJointAction()[1] == predictedMessages[3])
+                                            || (messages[m].getJointAction()[0] == predictedMessages[2]
+                                            && messages[m].getJointAction()[1] == predictedMessages[3]
+                                            && messages[m].getSecondJointAction()[0] == predictedMessages[0]
+                                            && messages[m].getSecondJointAction()[1] == predictedMessages[1])) {
+                                        previouslyCorrect2[p] = true;
+                                        break;
+                                    }
+                                } else if (!alternatingMessage && messages[m].size() == 1) {
+                                    if (messages[m].getJointAction()[0] == predictedMessages[0] && messages[m].getJointAction()[1] == predictedMessages[1]) {
+                                        previouslyCorrect2[p] = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for(int p = 0; p < predictionArray3.length; p++)
+            {
+                int[] predicted = predictionArray3[p];
+                if (predicted[0] >= 0 && predicted[1] >= 0) {
+                    AttitudeVector predictedAV = (AttitudeVector) dispAVClusters[predicted[0]].getCentroid();
+                    int[] prevActPair = game.getActionPair(i + memoryLength - 1);
+                    AttitudeVector prevAttDisp = converter.getAttitudeVectorFromActionPair(prevActPair[0], prevActPair[1]);
+                    AttitudeVector extrapolatedAV = AttitudeVector.extrapolate(prevAttDisp, predictedAV);
+                    int[] predictedActs = converter.attitudeVectorToActions(extrapolatedAV);
+                    if (predictedActs[0] == game.getPlayer1().getAction(i + memoryLength)) {
+                        // Determine if anything should be said or not
+                        SpeechAct[] messages = game.getPlayer1().getMessage(i + memoryLength);
+                        int[] predictedMessages = converter.attitudeVectorToActions((AttitudeVector) saidAVClusters[predicted[1]].getCentroid());
+                        if (((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getGreedy() == 0 &&
+                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getPlacate() == 0 &&
+                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getCooperate() == 0 &&
+                                ((AttitudeVector) saidAVClusters[predicted[1]].getCentroid()).getAbsurd() == 0) {
+                            if (messages.length == 0)
+                            {
+                                previouslyCorrect3[p] = true;
+                            }
+                        } else
+                        {
+                            boolean alternatingMessage = !(predictedMessages[0] == predictedMessages[2]
+                                    && predictedMessages[1] == predictedMessages[3]);
+                            for (int m = 0; m < messages.length; m++) {
+                                if (alternatingMessage && messages[m].size() == 2) {
+                                    if ((messages[m].getJointAction()[0] == predictedMessages[0]
+                                            && messages[m].getJointAction()[1] == predictedMessages[1]
+                                            && messages[m].getSecondJointAction()[0] == predictedMessages[2]
+                                            && messages[m].getSecondJointAction()[1] == predictedMessages[3])
+                                            || (messages[m].getJointAction()[0] == predictedMessages[2]
+                                            && messages[m].getJointAction()[1] == predictedMessages[3]
+                                            && messages[m].getSecondJointAction()[0] == predictedMessages[0]
+                                            && messages[m].getSecondJointAction()[1] == predictedMessages[1])) {
+                                        previouslyCorrect3[p] = true;
+                                        break;
+                                    }
+                                } else if (!alternatingMessage && messages[m].size() == 1) {
+                                    if (messages[m].getJointAction()[0] == predictedMessages[0] && messages[m].getJointAction()[1] == predictedMessages[1]) {
+                                        previouslyCorrect3[p] = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            //=============END INSERT============
+//            int[] predicted1 = matchingAutomata.getMostProbableActionAndMessage(previouslyCorrect1, sequence);
+//            int[] predicted2 = otherAutomata.getMostProbableActionAndMessage(previouslyCorrect2, sequence);
+//            int[] predicted3 = allAutomata.getMostProbableActionAndMessage(previouslyCorrect3, sequence);
             int[] prevActPair = game.getActionPair(i + memoryLength - 1);
-            AttitudeVector predictedAV1 = (AttitudeVector) dispAVClusters[predicted1[0]].getCentroid();
-            AttitudeVector predictedAV2 = (AttitudeVector) dispAVClusters[predicted2[0]].getCentroid();
-            AttitudeVector predictedAV3 = (AttitudeVector) dispAVClusters[predicted3[0]].getCentroid();
+            AttitudeVector predictedAV1 = (AttitudeVector) dispAVClusters[predictionArray1[0][0]].getCentroid();
+            AttitudeVector predictedAV2 = (AttitudeVector) dispAVClusters[predictionArray2[0][0]].getCentroid();
+            AttitudeVector predictedAV3 = (AttitudeVector) dispAVClusters[predictionArray3[0][0]].getCentroid();
             AttitudeVector prevAttDisp = converter.getAttitudeVectorFromActionPair(prevActPair[0], prevActPair[1]);
             AttitudeVector extrapolatedAV1 = AttitudeVector.extrapolate(prevAttDisp, predictedAV1);
             AttitudeVector extrapolatedAV2 = AttitudeVector.extrapolate(prevAttDisp, predictedAV2);
@@ -1048,6 +1368,22 @@ public class MegaAutomatonTest
             predictedAct[i][0] = predictedActs1[0];
             predictedAct[i][1] = predictedActs2[0];
             predictedAct[i][2] = predictedActs3[0];
+//            for(int t = 0; t < Math.max(Math.max(matchingAutomata.size(),otherAutomata.size()), allAutomata.size()); t++)
+//            {
+//                AttitudeVector predictedArrayAV1 = (AttitudeVector) dispAVClusters[predictionArray1[t + 1][0]].getCentroid();
+//                AttitudeVector predictedArrayAV2 = (AttitudeVector) dispAVClusters[predictionArray2[t + 1][0]].getCentroid();
+//                AttitudeVector predictedArrayAV3 = (AttitudeVector) dispAVClusters[predictionArray3[t + 1][0]].getCentroid();
+////                AttitudeVector prevAttDisp = converter.getAttitudeVectorFromActionPair(prevActPair[0], prevActPair[1]);
+//                AttitudeVector extrapolatedArrayAV1 = AttitudeVector.extrapolate(prevAttDisp, predictedArrayAV1);
+//                AttitudeVector extrapolatedArrayAV2 = AttitudeVector.extrapolate(prevAttDisp, predictedArrayAV2);
+//                AttitudeVector extrapolatedArrayAV3 = AttitudeVector.extrapolate(prevAttDisp, predictedArrayAV3);
+//                int[] predictedArrayActs1 = converter.attitudeVectorToActions(extrapolatedAV1);
+//                int[] predictedArrayActs2 = converter.attitudeVectorToActions(extrapolatedAV2);
+//                int[] predictedArrayActs3 = converter.attitudeVectorToActions(extrapolatedAV3);
+//                pArray[i][0][t] = predictedArrayActs1[0];
+//                pArray[i][1][t] = predictedArrayActs2[0];
+//                pArray[i][2][t] = predictedArrayActs3[0];
+//            }
         }
         StringBuilder fileNameBuilder = new StringBuilder();
         fileNameBuilder.append(dir);
@@ -1057,7 +1393,7 @@ public class MegaAutomatonTest
         fileNameBuilder.append("_extract.csv");
         try(FileWriter fWriter = new FileWriter(fileNameBuilder.toString()))
         {
-            fWriter.append("Round,P1 Act,P1 Message,P2 Act,P2 Message,P1 Payoff,P2 Payoff,P1 AV Displayed,P1 AV Said,P2 AV Displayed,P2 AV Said,Predicted Same,Predicted Different,Predicted All");
+            fWriter.append("Round,P1 Act,P1 Message,P2 Act,P2 Message,P1 Payoff,P2 Payoff,P1 AV Displayed,P1 AV Said,P2 AV Displayed,P2 AV Said,Predicted Same,Predicted Different,Predicted All,Automaton Index Matching,Automaton Index Other,Automaton Index All");
             fWriter.append('\n');
             int totCount = 0;
             int sameCorrect = 0;
@@ -1225,6 +1561,34 @@ public class MegaAutomatonTest
                 {
                     b.append("-,-,-");
                 }
+                b.append(',');
+                b.append(matchingAutomata.activeAutomatonIndex());
+                b.append(',');
+                b.append(otherAutomata.activeAutomatonIndex());
+                b.append(',');
+                b.append(allAutomata.activeAutomatonIndex());
+
+//                if(round > memoryLength)
+//                {
+//                    b.append(',');
+//                    for(int t = 0; t < pArray[round - memoryLength][0].length; t++)
+//                    {
+//                        b.append(pArray[round - memoryLength][0][t]);
+//                        b.append(' ');
+//                    }
+//                    b.append(',');
+//                    for(int t = 0; t < pArray[round - memoryLength][1].length; t++)
+//                    {
+//                        b.append(pArray[round - memoryLength][1][t]);
+//                        b.append(' ');
+//                    }
+//                    b.append(',');
+//                    for(int t = 0; t < pArray[round - memoryLength][2].length; t++)
+//                    {
+//                        b.append(pArray[round - memoryLength][2][t]);
+//                        b.append(' ');
+//                    }
+//                }
                 if((round - memoryLength) == predictedAct.length)
                 {
 //                    System.out.println("End reached!");
@@ -1238,6 +1602,7 @@ public class MegaAutomatonTest
                 fWriter.append("Training");
             } else
             {
+                System.out.println(fileNameBuilder.toString());
                 fWriter.append("Testing");
             }
             fWriter.append(",,,,,,,,,,,");
