@@ -94,6 +94,12 @@ public class AutomataGroup
         return previousActivePrediction;
     }
 
+    /**
+     *
+     * @param correctnessArray Tells whether the active, then all automata were previously correct
+     * @param history The history leading to the current round
+     * @return An array of predictions for the action and message. First index is which automaton (active, then all), second is action (0) or message (1)
+     */
     public int[][] getPredictionArray(boolean[] correctnessArray, int[][] history)
     {
         if(round > 0)
@@ -112,23 +118,7 @@ public class AutomataGroup
         {
             DSGeneralAutomaton prevActive = activeAutomaton;
             double highestAccuracy = 0;
-//            for(int a = 0; a < automata.size(); a++)
-//            {
-//                if(highestAccuracy < historicalAccuracy[a])
-//                {
-//                    highestAccuracy = historicalAccuracy[a];
-//                    activeAutomaton = automata.get(a);
-//                }
-//            }
-//            if(prevActive != activeAutomaton)
-//            {
-//                System.out.print("Swapped automaton! Round ");
-//                System.out.println(round);
-//            } else
-//            {
-//                System.out.print("Didn't swap! Round ");
-//                System.out.println(round);
-//            }
+
             for(int a = 0; a < automata.size(); a++)
             {
                 if(correctnessArray[a + 1])

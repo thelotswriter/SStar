@@ -172,7 +172,71 @@ public class Main
                     }
                     publishAllAvgSplitResults(allAvgResults);
                     break;
-                } default:
+                } case 8:
+                {
+                    int[] memLengths = new int[4];
+                    memLengths[0] = 1;
+                    memLengths[1] = 2;
+                    memLengths[2] = 4;
+                    memLengths[3] = 8;
+                    System.out.print("Train column (y/n)? ");
+                    String trCol = keys.next();
+                    System.out.print("Split (y/n): ");
+                    String split = keys.next();
+                    List<List<double[][]>> allAvgs = new ArrayList<>();
+                    List<List<List<int[][]>>> allEnums = new ArrayList<>();
+                    if(!trCol.equalsIgnoreCase("y"))
+                    {
+                        if(!split.equalsIgnoreCase("y"))
+                        {
+                            for(int m = 0; m < memLengths.length; m++)
+                            {
+                                List<double[][]> currentMemAvg = new ArrayList<>();
+                                List<List<int[][]>> currentMemEnum = new ArrayList<>();
+                                for(int i = 0; i < 200; i++)
+                                {
+                                    PlayerTwoTest playerTwoTest = new PlayerTwoTest(memLengths[m]);
+                                    double[][] avgResults = playerTwoTest.run();
+                                    List<int[][]> enumResults = playerTwoTest.getEnumeratedPredictions();
+                                    currentMemAvg.add(avgResults);
+                                    currentMemEnum.add(enumResults);
+                                    System.out.print(i);
+                                    System.out.print(" ");
+                                }
+                                allAvgs.add(currentMemAvg);
+                                allEnums.add(currentMemEnum);
+                                System.out.println();
+                            }
+                        } else
+                        {
+                            for(int m = 0; m < memLengths.length; m++)
+                            {
+                                List<double[][]> currentMemAvg = new ArrayList<>();
+                                List<List<int[][]>> currentMemEnum = new ArrayList<>();
+                                for(int i = 0; i < 200; i++)
+                                {
+                                    PlayerTwoSplitTest playerTwoSplitTest = new PlayerTwoSplitTest(memLengths[m]);
+                                    double[][] avgResults = playerTwoSplitTest.run();
+                                    List<int[][]> enumResults = playerTwoSplitTest.getEnumeratedPredictions();
+                                    currentMemAvg.add(avgResults);
+                                    currentMemEnum.add(enumResults);
+                                    System.out.print(i);
+                                    System.out.print(" ");
+                                }
+                                allAvgs.add(currentMemAvg);
+                                allEnums.add(currentMemEnum);
+                                System.out.println();
+                            }
+                        }
+                    } else
+                    {
+
+                    }
+                    printFinalResults(allAvgs, allEnums);
+                    System.out.println("All done!");
+                    break;
+                }
+                default:
                 {
                     System.out.println("Invalid Selection. Try again..");
                 }
@@ -247,6 +311,224 @@ public class Main
             }
         }
         System.out.println("Done");
+    }
+
+    private static void printFinalResults(List<List<double[][]>> allAvgs, List<List<List<int[][]>>> allEnums)
+    {
+        printFinalAvgs(allAvgs);
+        printFinalEnumResults(allEnums);
+    }
+
+    private static void printFinalAvgs(List<List<double[][]>> allAvgs)
+    {
+        StringBuilder fBuilder = new StringBuilder();
+        fBuilder.append(dir);
+        fBuilder.append("\\Final Avg Results.csv");
+        try(FileWriter fileWriter = new FileWriter(fBuilder.toString()))
+        {
+            double[][] combinedAvgs = new double[7][14];
+            double total = 0;
+            int memCount = 0;
+            NumberFormat formatter = new DecimalFormat("#0.000");
+            for(List<double[][]> singleMemAvgs : allAvgs)
+            {
+                fileWriter.append("MEMORY ");
+                fileWriter.append(Integer.toString(memCount));
+                fileWriter.append('\n');
+                memCount++;
+                for(double[][] singleSampleAvgs : singleMemAvgs)
+                {
+                    StringBuilder b = new StringBuilder();
+                    for(int i = 0; i < singleSampleAvgs.length; i++)
+                    {
+                        for(int j = 0; j < singleSampleAvgs[i].length; j++)
+                        {
+                            combinedAvgs[i][j] +=singleSampleAvgs[i][j];
+                            b.append(formatter.format(singleSampleAvgs[i][j]));
+                            b.append(',');
+                        }
+                        b.append('\n');
+                    }
+                    total++;
+                    b.append('\n');
+                    fileWriter.append(b.toString());
+                }
+            }
+            fileWriter.append('\n');
+            fileWriter.append("COMBINED");
+            fileWriter.append('\n');
+            StringBuilder combinedBuilder = new StringBuilder();
+            for(int i = 0; i < combinedAvgs.length; i++)
+            {
+                for(int j = 0; j < combinedAvgs[i].length; j++)
+                {
+                    double avg = combinedAvgs[i][j] / total;
+                    combinedBuilder.append(formatter.format(avg));
+                    combinedBuilder.append(',');
+                }
+                combinedBuilder.append('\n');
+            }
+            fileWriter.append(combinedBuilder.toString());
+            System.out.println("Finished with Final Avgs!");
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private static void printFinalEnumResults(List<List<List<int[][]>>> allEnums)
+    {
+        StringBuilder fBuilder = new StringBuilder();
+        fBuilder.append(dir);
+        fBuilder.append("\\Final Enum Results.csv");
+        try(FileWriter fileWriter = new FileWriter(fBuilder.toString()))
+        {
+            int[] indivEnumIndices = new int[allEnums.size()];
+            int[] gameplayIndices = new int[allEnums.size()];
+            int[] memLengthIndices = new int[allEnums.size()];
+            boolean write = true;
+            int count = 0;
+            while (write)
+            {
+                StringBuilder b = new StringBuilder();
+                for(int i = 0; i < allEnums.size(); i++)
+                {
+                    if(memLengthIndices[i] < allEnums.get(i).size())
+                    {
+                        if(gameplayIndices[i] < allEnums.get(i).get(memLengthIndices[i]).size())
+                        {
+                            if(indivEnumIndices[i] < allEnums.get(i).get(memLengthIndices[i]).get(gameplayIndices[i]).length)
+                            {
+                                for(int j = 0; j < allEnums.get(i).get(memLengthIndices[i]).get(gameplayIndices[i])[indivEnumIndices[i]].length; j++)
+                                {
+                                    b.append(allEnums.get(i).get(memLengthIndices[i]).get(gameplayIndices[i])[indivEnumIndices[i]][j]);
+                                    b.append(',');
+                                }
+                                indivEnumIndices[i]++;
+                            } else
+                            {
+                                b.append(",,,,,,,,,");
+                                indivEnumIndices[i] = 0;
+                                gameplayIndices[i]++;
+                            }
+                        } else
+                        {
+                            b.append(",,,,,,,,,");
+                            gameplayIndices[i] = 0;
+                            memLengthIndices[i]++;
+                        }
+                    } else
+                    {
+                        b.append(",,,,,,,,,");
+                    }
+                    b.append(',');
+                }
+                b.append('\n');
+                fileWriter.append(b.toString());
+                write = (memLengthIndices[0] < allEnums.get(0).size());
+                for(int i = 1; i < allEnums.size(); i++)
+                {
+                    write = write || (memLengthIndices[i] < allEnums.get(i).size());
+                }
+                if(count % 1000 == 0)
+                {
+                    System.out.println(count);
+                }
+                count++;
+            }
+            System.out.println("Finished with Final Enum Results");
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        List<List<List<double[]>>> enumSummaries = new ArrayList<>();
+        for(List<List<int[][]>> sharedMemLengthEnums : allEnums)
+        {
+            List<List<double[]>> sharedMemLengthAvgs = new ArrayList<>();
+            for(List<int[][]> gameplayEnums : sharedMemLengthEnums)
+            {
+                List<double[]> gameplayAvgs = new ArrayList<>();
+                for(int[][] indivGameEnum : gameplayEnums)
+                {
+                    double[] accuracies = new double[indivGameEnum[0].length - 2];
+                    for(int i = 0; i < indivGameEnum.length; i++)
+                    {
+                        for(int j = 2; j < indivGameEnum[i].length; j++)
+                        {
+                            if(indivGameEnum[i][0] == indivGameEnum[i][j])
+                            {
+                                accuracies[j - 2]++;
+                            }
+
+                        }
+                    }
+                    for(int i = 0; i < accuracies.length; i++)
+                    {
+                        accuracies[i] = accuracies[i] / ((double) indivGameEnum.length);
+                    }
+                    gameplayAvgs.add(accuracies);
+                }
+                sharedMemLengthAvgs.add(gameplayAvgs);
+            }
+            enumSummaries.add(sharedMemLengthAvgs);
+        }
+        System.out.println("Finished creating enum summaries");
+        StringBuilder fBuilder2 = new StringBuilder();
+        fBuilder2.append(dir);
+        fBuilder2.append("\\Final Enum Avg Results.csv");
+        try(FileWriter fileWriter = new FileWriter(fBuilder2.toString()))
+        {
+            int[] gameplayIndices = new int[enumSummaries.size()];
+            int[] memLengthIndices = new int[enumSummaries.size()];
+            NumberFormat formatter = new DecimalFormat("#0.000");
+            boolean write = true;
+            int count = 0;
+            while (write)
+            {
+                StringBuilder b = new StringBuilder();
+                for(int i = 0; i < enumSummaries.size(); i++)
+                {
+                    if(memLengthIndices[i] < enumSummaries.get(i).size())
+                    {
+                        if(gameplayIndices[i] < enumSummaries.get(i).get(memLengthIndices[i]).size())
+                        {
+                            for(int j = 0; j < enumSummaries.get(i).get(memLengthIndices[i]).get(gameplayIndices[i]).length; j++)
+                            {
+                                b.append(formatter.format(enumSummaries.get(i).get(memLengthIndices[i]).get(gameplayIndices[i])[j]));
+                                b.append(',');
+                            }
+                            gameplayIndices[i]++;
+                        } else
+                        {
+                            b.append(",,,,,,,");
+                            gameplayIndices[i] = 0;
+                            memLengthIndices[i]++;
+                        }
+                    } else
+                    {
+                        b.append(",,,,,,,");
+                    }
+                    b.append(',');
+                }
+                b.append('\n');
+                fileWriter.append(b.toString());
+                write = (memLengthIndices[0] < enumSummaries.get(0).size());
+                for(int i = 1; i < allEnums.size(); i++)
+                {
+                    write = write || (memLengthIndices[i] < enumSummaries.get(i).size());
+                }
+                if(count % 1000 == 0)
+                {
+                    System.out.print("Avgs ");
+                    System.out.println(count);
+                }
+                count++;
+            }
+            System.out.println("Finished with Final Enum Avg Results");
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private static void publishAllAvgSplitResults(double[][][][] allAvgResults)

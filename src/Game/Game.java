@@ -102,15 +102,20 @@ public class Game
         return Math.min(player1.getActionHistoryLength(), player2.getActionHistoryLength());
     }
 
+    public String getName()
+    {
+        return name;
+    }
+
     /**
      * Swaps columns and rows
      */
-    public void transpose()
+    public Game transpose()
     {
-        payoffMatrix.transpose();
-        Player temp = player1;
-        player1 = player2;
-        player2 = temp;
+        Game tGame = new Game(payoffMatrix.transpose());
+        tGame.setName(name);
+        tGame.setPlayers(player2, player1);
+        return tGame;
     }
 
     public void setName(String name)

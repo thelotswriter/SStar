@@ -177,7 +177,7 @@ public class PayoffMatrix
     /**
      * Transposes the matrix so the rows become the columns and the columns become rows. Swaps values as well to compensate
      */
-    public void transpose()
+    public PayoffMatrix transpose()
     {
         double[][][] newMatrix = new double[matrix[0].length][matrix.length][2];
         for(int newRow = 0; newRow < newMatrix.length; newRow++)
@@ -188,7 +188,8 @@ public class PayoffMatrix
                 newMatrix[newRow][newCol][1] = matrix[newCol][newRow][0];
             }
         }
-        matrix = newMatrix;
+        return new PayoffMatrix(newMatrix);
+//        matrix = newMatrix;
     }
 
 }
