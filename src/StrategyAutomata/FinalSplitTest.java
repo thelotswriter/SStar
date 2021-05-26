@@ -18,15 +18,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlayerTwoSplitTest
+public class FinalSplitTest
 {
 
     private final String dir = "C:\\Users\\thelo\\Documents\\BYU\\Research\\Spp Games\\newResults";
-
+    private final String testDir = "C:\\Users\\thelo\\Documents\\BYU\\Research\\Spp Games\\newResults\\Extra Results";
 
     private File[] altFiles;
     private File[] chickenFiles;
     private File[] prisonFiles;
+    private File[] altTestFiles;
+    private File[] chickenTestFiles;
+    private File[] prisonTestFiles;
+    private File[] endlessTestFiles;
 
     private Game[] altGames;
     private Game[] chickenGames;
@@ -37,6 +41,7 @@ public class PlayerTwoSplitTest
     private Game[] chickenTestGames;
     private Game[] prisonTrainGames;
     private Game[] prisonTestGames;
+    private Game[] endlessTestGames;
 
     private ActionAttitudeConverter altConverter;
     private ActionAttitudeConverter chickenConverter;
@@ -81,7 +86,7 @@ public class PlayerTwoSplitTest
     private double discount = 0.0;
     private int memoryLength;
 
-    public PlayerTwoSplitTest(int memLength)
+    public FinalSplitTest(int memLength)
     {
         memoryLength = memLength;
         initialize();

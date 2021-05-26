@@ -7,6 +7,7 @@ import Features.Feature;
 import Features.GameToFeatureList;
 import Game.Game;
 import Game.TXTtoGame;
+import Game.TXTfileConverter;
 import StrategyAutomata.*;
 import StrategyTables.StrategyTable;
 
@@ -235,8 +236,12 @@ public class Main
                     printFinalResults(allAvgs, allEnums);
                     System.out.println("All done!");
                     break;
-                }
-                default:
+                } case 9:
+                {
+                    TXTfileConverter fileConverter = new TXTfileConverter();
+                    fileConverter.convertFiles();
+                    break;
+                } default:
                 {
                     System.out.println("Invalid Selection. Try again..");
                 }
