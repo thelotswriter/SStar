@@ -37,6 +37,15 @@ public class Game
     }
 
     /**
+     * Sets the payoff matrix for the game
+     * @param payoffMatrix The new payoff matrix
+     */
+    public void setPayoffMatrix(PayoffMatrix payoffMatrix)
+    {
+        this.payoffMatrix = payoffMatrix;
+    }
+
+    /**
      * Sets new players for the game
      * @param player1 The new first player
      * @param player2 The new second player

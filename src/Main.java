@@ -231,7 +231,47 @@ public class Main
                         }
                     } else
                     {
-
+                        if(!split.equalsIgnoreCase("y"))
+                        {
+                            for(int m = 0; m < memLengths.length; m++)
+                            {
+                                List<double[][]> currentMemAvg = new ArrayList<>();
+                                List<List<int[][]>> currentMemEnum = new ArrayList<>();
+                                for(int i = 0; i < 200; i++)
+                                {
+                                    FinalTest finalTest = new FinalTest(memLengths[m]);
+                                    double[][] avgResults = finalTest.run();
+                                    List<int[][]> enumResults = finalTest.getEnumeratedPredictions();
+                                    currentMemAvg.add(avgResults);
+                                    currentMemEnum.add(enumResults);
+                                    System.out.print(i);
+                                    System.out.print(" ");
+                                }
+                                allAvgs.add(currentMemAvg);
+                                allEnums.add(currentMemEnum);
+                                System.out.println();
+                            }
+                        } else
+                        {
+                            for(int m = 0; m < memLengths.length; m++)
+                            {
+                                List<double[][]> currentMemAvg = new ArrayList<>();
+                                List<List<int[][]>> currentMemEnum = new ArrayList<>();
+                                for(int i = 0; i < 200; i++)
+                                {
+                                    FinalSplitTest finalSplitTest = new FinalSplitTest(memLengths[m]);
+                                    double[][] avgResults = finalSplitTest.run();
+                                    List<int[][]> enumResults = finalSplitTest.getEnumeratedPredictions();
+                                    currentMemAvg.add(avgResults);
+                                    currentMemEnum.add(enumResults);
+                                    System.out.print(i);
+                                    System.out.print(" ");
+                                }
+                                allAvgs.add(currentMemAvg);
+                                allEnums.add(currentMemEnum);
+                                System.out.println();
+                            }
+                        }
                     }
                     printFinalResults(allAvgs, allEnums);
                     System.out.println("All done!");
@@ -331,7 +371,7 @@ public class Main
         fBuilder.append("\\Final Avg Results.csv");
         try(FileWriter fileWriter = new FileWriter(fBuilder.toString()))
         {
-            double[][] combinedAvgs = new double[7][14];
+            double[][] combinedAvgs = new double[7][allAvgs.get(0).get(0)[0].length];
             double total = 0;
             int memCount = 0;
             NumberFormat formatter = new DecimalFormat("#0.000");
